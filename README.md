@@ -10,6 +10,14 @@ To set up your environment:
 
 Note: please let me know if you need any package as if one person updates their venv without others doing the same, it'll mess up the venv.
 
+Since, PyPortfolioOpt requires very specific versions of numpy and pandas along with Visual Studio C++, do the following:
+1. Before installing and setting up your environment, install Visual Studio Build Tools from here: https://visualstudio.microsoft.com/downloads/
+choose the Community version if you have Windows
+2. From the available softwares, select "Visual Studio Build Tools 2019"
+3. Now your pipenv shell should be able to install PyPortfolioOpt
+
+Note: The above is for Windows users, for Mac users please see: https://osxdaily.com/2014/02/12/install-command-line-tools-mac-os-x/
+
 To run a jupyter notebook instance with this venv:
 1. Activate your venv by: pipenv shell
 2. run the command: pipenv run jupyter notebook
