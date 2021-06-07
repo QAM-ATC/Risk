@@ -7,11 +7,14 @@ certifi==2021.5.30
 cffi==1.14.5
 chardet==4.0.0
 colorama==0.4.4
+cvxpy==1.1.13
 cycler==0.10.0
 DateTime==4.3
 decorator==5.0.9
 defusedxml==0.7.1
+ecos==2.0.7.post1
 entrypoints==0.3
+future==0.18.2
 idna==2.10
 importlib-metadata==4.5.0
 ipykernel==5.5.5
@@ -41,6 +44,7 @@ nbformat==5.1.3
 nest-asyncio==1.5.1
 notebook==6.4.0
 numpy==1.20.3
+osqp==0.6.1
 packaging==20.9
 pandas==1.2.4
 pandocfilters==1.4.3
@@ -51,9 +55,11 @@ Pillow==8.2.0
 plotly==4.14.3
 prometheus-client==0.11.0
 prompt-toolkit==3.0.18
+pybind11==2.6.2
 pycparser==2.20
 Pygments==2.9.0
 pyparsing==2.4.7
+pyportfolioopt==1.4.1
 pyrsistent==0.17.3
 python-dateutil==2.8.1
 pytz==2021.1
@@ -66,6 +72,7 @@ requests==2.25.1
 retrying==1.3.3
 scikit-learn==0.24.2
 scipy==1.6.3
+scs==2.1.4
 seaborn==0.11.1
 Send2Trash==1.5.0
 six==1.16.0
