@@ -88,9 +88,10 @@ MarkupSafe = "==2.0.1"
 Pillow = "==8.2.0"
 Pygments = "==2.9.0"
 QtPy = "==1.9.0"
+Quandl= '*'
 Send2Trash = "==1.5.0"
 
 [dev-packages]
-
+black = '*'
 [requires]
 python_version = "3.7"
