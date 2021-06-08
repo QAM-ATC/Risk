@@ -13,7 +13,7 @@ pipenv shell
 3. Ideally, pipenv should detect the Pipfile or the requirements.txt, if not then:
     manually run the command:
 ``` {python}
-    pipenv install -r requirements.txt
+pipenv install -r requirements.txt
 ```
 4. To exit the virtual environment do:
 ``` {python}
