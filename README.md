@@ -4,7 +4,7 @@ This is going to be the Risk codebase.
 To set up your environment:
 1. install pipenv by:
 ``` {python}
-    pip install pipenv
+pip install pipenv
 ```
 2. then go to the main directory of this repo and do:
 ``` {python}
@@ -14,7 +14,7 @@ pipenv shell
     manually run the command:
 ``` {python}
     pipenv install -r requirements.txt
-    ```
+```
 4. To exit the virtual environment do:
 ``` {python}
 exit
