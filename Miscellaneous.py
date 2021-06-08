@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.axes as ax
 import matplotlib.pyplot as plt
 import pandas as pd
+import quandl
+import datetime as dt
 
 class Plot:
 
@@ -161,3 +163,64 @@ class Plot:
 
         return ax
 
+class FetchData:
+
+    def __init__(self):
+
+        # For the first time
+        API_KEY = "YOUR_KEY_HERE"
+        quandl.save_key(API_KEY)
+
+        # After the key has been added to your environment already
+        quandl.read_key()
+
+    # Gets test datasets from the quandl api
+    def test_set(self, startDate:str=None, endDate:str=None, ticker:str="AAPL", **kwargs) -> pd.DataFrame:
+        """Test sets which are called from Quandl each time.
+        The function currently calls the given ticker close prices from the WIKI/PRICES database from Quandl.
+        If no startDate or endDate is provided, the function returns the close prices of the last year for the ticker
+
+        Parameters
+        ----------
+        startDate : str, optional
+            Incase the user wants to supply a startDate to call data from a specific time period
+            The format is "YYYY-MM-DD", by default None
+        endDate : str, optional
+            Incase the user wants to supply a endDate to call data from a specific time period
+            The format is "YYYY-MM-DD", by default None
+        ticker : str, optional
+            The test set ticker dataset that is called.
+            Incase, the called ticker is not available in the WIKI/PRICES database,
+            the function throws an error, by default "AAPL"
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns a pandas dataframe object consisting of the called data for the ticker
+        """
+
+        # Both start and end dates must be provided else the call reverts to the default set of
+        # endDate as today and startDate as a year back
+        if not startDate or endDate:
+            endDate = dt.datetime.today().strftime(format="%Y-%m-%d")
+            startDate = (dt.datetime.today() - dt.timedelta(years=1)).strftime(format="%Y-%m-%d")
+
+        try:
+            # The standard database that we want to use for our test cases
+            database = "WIKI/PRICES"
+            # Filtering the database by columns to only return the ticker, date, and close price for the dates greater than
+            # or equal to the startDate and less than and equal to the endDate
+            data = quandl.get_table(database, qopts = { 'columns': ['ticker', 'date', 'close'] },
+                                     ticker = [ticker], date = { 'gte': startDate, 'lte': endDate })
+
+        except: raise ImportError("Unable to Import test data, please try again.")
+
+        else:
+
+            print(f"...Data for {ticker} from {startDate} to {endDate} loaded successfully")
+
+            return data
+
+    # Gets actual data from the quandl api
+    def get():
+        ...
