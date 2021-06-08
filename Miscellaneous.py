@@ -168,7 +168,7 @@ class FetchData:
     def __init__(self):
 
         # For the first time
-        API_KEY = "YOUR_KEY_HERE"
+        API_KEY = "_P-WyiAmFeHiTp_nUJqi"
         quandl.save_key(API_KEY)
 
         # After the key has been added to your environment already
@@ -178,7 +178,7 @@ class FetchData:
     def test_set(self, startDate:str=None, endDate:str=None, ticker:str="AAPL", **kwargs) -> pd.DataFrame:
         """Test sets which are called from Quandl each time.
         The function currently calls the given ticker close prices from the WIKI/PRICES database from Quandl.
-        If no startDate or endDate is provided, the function returns the close prices of the last year for the ticker
+        If no startDate or endDate is provided, the function returns the trailing twelve months (TTM) close prices for the ticker
 
         Parameters
         ----------
