@@ -168,7 +168,7 @@ class FetchData:
     def __init__(self):
 
         # For the first time
-        API_KEY = "_P-WyiAmFeHiTp_nUJqi"
+        API_KEY = "YOUR_KEY_HERE"
         quandl.save_key(API_KEY)
 
         # After the key has been added to your environment already
