@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import quandl
 import datetime as dt
+from typing import Union
 
 class Plot:
 
@@ -42,7 +43,7 @@ class Plot:
         return ax
 
     def efficient_frontier(optimizer: pypfopt.EfficientFrontier, efficientParameter: str = 'return',
-                            efficentParameterRange:np.array| list=None, points:int=100, ax:ax=None,
+                            efficentParameterRange:Union[np.array,list]=None, points:int=100, ax:ax=None,
                             showAssets=True, plot:bool=False, complex:bool=True, **kwargs) -> ax:
         """The function computes and plots the Efficient Frontier on an Efficient Frontier object
          instantiated from the PyPortolioOpt package
@@ -174,11 +175,12 @@ class FetchData:
     def __init__(self):
 
         # For the first time
-        API_KEY = "YOUR_KEY_HERE"
-        quandl.save_key(API_KEY)
+        #API_KEY = "YOUR_KEY_HERE"
+        #quandl.save_key(API_KEY)
 
         # After the key has been added to your environment already
         quandl.read_key()
+
 
     # Gets test datasets from the quandl api
     def test_set(self, startDate: str = None, endDate: str = None, ticker: str = "AAPL", **kwargs) -> pd.DataFrame:
@@ -252,7 +254,7 @@ class FetchData:
         # endDate as today and startDate as a year back
         if not startDate or endDate:
             endDate = dt.datetime.today().strftime(format="%Y-%m-%d")
-            startDate = (dt.datetime.today() - dt.timedelta(years=1)).strftime(format="%Y-%m-%d")
+            startDate = (dt.datetime.today() - dt.timedelta(days=365)).strftime(format="%Y-%m-%d")
 
         try:
             # The standard database that we want to use for our test cases
@@ -265,5 +267,5 @@ class FetchData:
         except: raise ImportError("Unable to Import test data, please try again.")
 
         else:
-
             print(f"...Data for {database} from {startDate} to {endDate} loaded successfully")
+            return data
