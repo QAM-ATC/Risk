@@ -9,8 +9,8 @@ from Miscellaneous import FetchData
 
 class MeanVariance:
 
-    def __init__(self,historicalPrices: pd.DataFrame,tickers: list=None,bounds: Union[tuple,list]=(0,1),riskFreeRate: float=None,
-    solver: str=None, solverOptions: dict=None,verbose: bool=False):
+    def __init__(self,historicalPrices: pd.DataFrame,tickers: list = None,bounds: Union[tuple,list] = (0,1),riskFreeRate: float = None,
+    solver: str = None, solverOptions: dict = None,verbose: bool =False):
         """Constructor to instantiate the class based on the input parameters.
 
         Parameters
@@ -30,14 +30,20 @@ class MeanVariance:
         verbose : bool, optional
             Whether performance and debugging information should be printed, by default False
         """
+
         expectedReturns = expected_returns.mean_historical_return(historicalPrices)
         covarianceMatrix = risk_models.CovarianceShrinkage(historicalPrices).ledoit_wolf()
         self.portfolio=pypfopt.EfficientFrontier(expectedReturns,covarianceMatrix,bounds,solver,verbose,solverOptions)
+
         if riskFreeRate is None:
+
             # TODO: implement risk-free rate for same time period as returns; implement dynamic rf-rate rather than static
-            self.riskFreeRate=FetchData().risk_free_rate().mean().values[0]
+            self.riskFreeRate=FetchData().risk_free_rate(startDate=historicalPrices.index.astype('str')[0], endDate=historicalPrices.index.astype('str')[-1]).mean().values[0]
+
         else:
+
             self.riskFreeRate=riskFreeRate
+
         self.weights=None
 
     def fit(self)->dict:
@@ -47,11 +53,13 @@ class MeanVariance:
         -------
         dict
             Returns a dictionary with format {ticker:weight}
-        """ 
+        """
+
         self.weights=dict(self.portfolio.max_sharpe(self.riskFreeRate))
+
         return self.weights
 
-    def stats(self,verbose: bool=True)->tuple:
+    def stats(self,verbose: bool = True)->tuple:
         """Generate the expected annual return, annual volatility and Sharpe Ratio of the portfolio.
 
         Parameters

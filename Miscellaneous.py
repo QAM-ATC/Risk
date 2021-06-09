@@ -9,6 +9,7 @@ import pandas as pd
 import quandl
 import datetime as dt
 from typing import Union
+from pypfopt import plotting
 
 class Plot:
 
@@ -30,19 +31,20 @@ class Plot:
         matplotlib.axes
             Returns a matplotlib.axes object
         """
+
         # Type checking for weights
         if not isinstance(weights, dict):
             raise ValueError("Weights are required to be in a dictionary of the format {ticker:weight}")
 
         # Calling the plot_weights function from PyPortfolioOpt
-        ax = pypfopt.plotting.plot_weights(weights=weights, ax=ax, **kwargs)
+        ax = plotting.plot_weights(weights=weights, ax=ax, **kwargs)
 
         if plot:
             plt.show()
 
         return ax
 
-    def efficient_frontier(optimizer: pypfopt.EfficientFrontier, efficientParameter: str = 'return',
+    def efficient_frontier(self, optimizer: pypfopt.EfficientFrontier, efficientParameter: str = 'return',
                             efficentParameterRange:Union[np.array,list]=None, points:int=100, ax:ax=None,
                             showAssets=True, plot:bool=False, complex:bool=True, **kwargs) -> ax:
         """The function computes and plots the Efficient Frontier on an Efficient Frontier object
@@ -78,7 +80,7 @@ class Plot:
         """
 
         fig, ax = plt.subplots()
-        ax = pypfopt.plotting.plot_efficient_frontier(opt=optimizer, ef_param=efficientParameter,
+        ax = plotting.plot_efficient_frontier(opt=optimizer, ef_param=efficientParameter,
                                                      ef_param_range=efficentParameterRange, points=points,
                                                      ax=ax, show_assets=showAssets, **kwargs)
 
@@ -114,7 +116,7 @@ class Plot:
 
         return ax
 
-    def covariance_heatmap(covarianceMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def covariance_heatmap(self, covarianceMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
 
         """The function returns a matplotlib axes object and computes the heatmap for the Covariance matrix
         of a given set of assets
@@ -133,7 +135,7 @@ class Plot:
             Retuns the matplotlib.axes object
         """
 
-        ax = pypfopt.plotting.plot_covariance(cov_matrix=covarianceMatrix, plot_correlation=False,
+        ax = plotting.plot_covariance(cov_matrix=covarianceMatrix, plot_correlation=False,
                                              show_tickers=showAssets, **kwargs)
 
         if plot:
@@ -142,7 +144,7 @@ class Plot:
         return ax
 
 
-    def correlation_heatmap(correlationMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def correlation_heatmap(self, correlationMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
 
         """The function returns a matplotlib axes object and computes the heatmap for the correlationMatrix
         of a given set of assets
@@ -163,7 +165,7 @@ class Plot:
 
         # I've directly asked the user for a correlation matrix rather than asking for a covariance matrix first and then converting
         #  it into a correlation matrix in PyPortfolioOpt
-        ax = pypfopt.plotting.plot_covariance(cov_matrix=correlationMatrix, plot_correlation=False, show_tickers=showAssets, **kwargs)
+        ax = plotting.plot_covariance(cov_matrix=correlationMatrix, plot_correlation=False, show_tickers=showAssets, **kwargs)
 
         if plot:
             plt.show()
@@ -183,7 +185,7 @@ class FetchData:
 
 
     # Gets test datasets from the quandl api
-    def test_set(self, startDate: str = None, endDate: str = None, ticker: str = "AAPL", **kwargs) -> pd.DataFrame:
+    def test_set(self, startDate: str = None, endDate: str = None, ticker: Union[str, list] = "AAPL", **kwargs) -> pd.DataFrame:
         """Test sets which are called from Quandl each time.
         The function currently calls the given ticker close prices from the WIKI/PRICES database from Quandl.
         If no startDate or endDate is provided, the function returns the trailing twelve months (TTM) close prices for the ticker
@@ -206,12 +208,16 @@ class FetchData:
         pd.DataFrame
             Returns a pandas dataframe object consisting of the called data for the ticker
         """
+        # Incase the ticker provided is a single string rather than a list of tickers
+        if isinstance(ticker, str):
+            ticker = [ticker]
 
         # Both start and end dates must be provided else the call reverts to the default set of
         # endDate as today and startDate as a year back
-        if not startDate or endDate:
+
+        if not isinstance(startDate, str) or not isinstance(endDate, str):
             endDate = dt.datetime.today().strftime(format="%Y-%m-%d")
-            startDate = (dt.datetime.today() - dt.timedelta(years=1)).strftime(format="%Y-%m-%d")
+            startDate = (dt.datetime.today() - dt.timedelta(days=365)).strftime(format="%Y-%m-%d")
 
         try:
             # The standard database that we want to use for our test cases
@@ -219,7 +225,8 @@ class FetchData:
             # Filtering the database by columns to only return the ticker, date, and close price for the dates greater than
             # or equal to the startDate and less than and equal to the endDate
             data = quandl.get_table(database, qopts = { 'columns': ['ticker', 'date', 'close'] },
-                                     ticker = [ticker], date = { 'gte': startDate, 'lte': endDate })
+                                     ticker = ticker, date = { 'gte': startDate, 'lte': endDate })
+            data = data.pivot(index='date', columns='ticker', values='close')
 
         except: raise ImportError("Unable to Import test data, please try again.")
 
@@ -227,7 +234,7 @@ class FetchData:
 
             print(f"...Data for {ticker} from {startDate} to {endDate} loaded successfully")
 
-            return data
+        return data
 
     def risk_free_rate(self, startDate: str = None, endDate: str = None, **kwargs) -> pd.DataFrame:
         """The function returns the riskFreeRate for a given start and end date from Quandl.
@@ -252,15 +259,14 @@ class FetchData:
 
         # Both start and end dates must be provided else the call reverts to the default set of
         # endDate as today and startDate as a year back
-        if not startDate or endDate:
+        if not isinstance(startDate, str) or not isinstance(endDate, str):
             endDate = dt.datetime.today().strftime(format="%Y-%m-%d")
             startDate = (dt.datetime.today() - dt.timedelta(days=365)).strftime(format="%Y-%m-%d")
 
         try:
             # The standard database that we want to use for our test cases
-            database = "USTREASURY/YIELD.1"
-            # Filtering the database by columns to only return the ticker, date, and close price for the dates greater than
-            # or equal to the startDate and less than and equal to the endDate
+            database = "USTREASURY/YIELD.3"
+
             data = quandl.get(database, start_date = startDate, end_date  = endDate)
             data.columns = ['riskFreeRate']
 
