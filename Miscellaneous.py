@@ -13,7 +13,7 @@ from pypfopt import plotting
 
 class Plot:
 
-    def weights(weights: dict, ax: ax = None, plot: bool = False, **kwargs) -> ax:
+    def weights(self, weights: dict, ax: ax = None, plot: bool = False, **kwargs) -> ax:
         """The function plots the weights that are outputted by the
         PyPortfolioOpt optimizer.
 
@@ -80,6 +80,7 @@ class Plot:
         """
 
         fig, ax = plt.subplots()
+        # TODO: Some error occuring in plotting
         ax = plotting.plot_efficient_frontier(opt=optimizer, ef_param=efficientParameter,
                                                      ef_param_range=efficentParameterRange, points=points,
                                                      ax=ax, show_assets=showAssets, **kwargs)
@@ -142,7 +143,6 @@ class Plot:
             plt.show()
 
         return ax
-
 
     def correlation_heatmap(self, correlationMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
 
@@ -221,6 +221,7 @@ class FetchData:
 
         try:
             # The standard database that we want to use for our test cases
+            # Please note: the database does not have data beyond 2018-03-27, it will be swapped out in future versions
             database = "WIKI/PRICES"
             # Filtering the database by columns to only return the ticker, date, and close price for the dates greater than
             # or equal to the startDate and less than and equal to the endDate

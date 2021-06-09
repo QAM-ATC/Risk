@@ -33,7 +33,7 @@ class MeanVariance:
 
         expectedReturns = expected_returns.mean_historical_return(historicalPrices)
         covarianceMatrix = risk_models.CovarianceShrinkage(historicalPrices).ledoit_wolf()
-        self.portfolio=pypfopt.EfficientFrontier(expectedReturns,covarianceMatrix,bounds,solver,verbose,solverOptions)
+        self.portfolio = pypfopt.EfficientFrontier(expectedReturns, covarianceMatrix, bounds, solver, verbose, solverOptions)
 
         if riskFreeRate is None:
 
@@ -42,11 +42,11 @@ class MeanVariance:
 
         else:
 
-            self.riskFreeRate=riskFreeRate
+            self.riskFreeRate = riskFreeRate
 
-        self.weights=None
+        self.weights = None
 
-    def fit(self)->dict:
+    def fit(self) -> dict:
         """Optimize the portfolio by maxizing the Sharpe Ratio, and return the tickers and their respective weights.
 
         Returns
@@ -55,11 +55,11 @@ class MeanVariance:
             Returns a dictionary with format {ticker:weight}
         """
 
-        self.weights=dict(self.portfolio.max_sharpe(self.riskFreeRate))
+        self.weights = dict(self.portfolio.max_sharpe(self.riskFreeRate))
 
         return self.weights
 
-    def stats(self,verbose: bool = True)->tuple:
+    def stats(self, verbose: bool = True) -> tuple:
         """Generate the expected annual return, annual volatility and Sharpe Ratio of the portfolio.
 
         Parameters
@@ -72,7 +72,9 @@ class MeanVariance:
         tuple
             Calculated statistics in the format (expected annual return, annual volatility, Sharpe Ratio)
         """
-        stat=self.portfolio.portfolio_performance(verbose=verbose,risk_free_rate=self.riskFreeRate)
+
+        stat = self.portfolio.portfolio_performance(verbose=verbose,risk_free_rate=self.riskFreeRate)
+
         return stat
 
 class CPPI:
