@@ -110,7 +110,7 @@ class Plot:
 
         return ax
 
-    def covariance_heatmap(covarianceMatrix:pd.Dataframe, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def covariance_heatmap(covarianceMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
         """The function returns a matplotlib axes object and computes the heatmap for the Covariance matrix
         of a given set of assets
 
@@ -136,7 +136,7 @@ class Plot:
 
         return ax
 
-    def correlation_heatmap(correlationMatrix:pd.Dataframe, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def correlation_heatmap(correlationMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
         """The function returns a matplotlib axes object and computes the heatmap for the correlationMatrix
         of a given set of assets
 
