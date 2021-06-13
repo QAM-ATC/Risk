@@ -9,8 +9,8 @@ from Miscellaneous import FetchData
 
 class MeanVariance:
 
-    def __init__(self,historicalPrices: pd.DataFrame,tickers: list = None,bounds: Union[tuple,list] = (0,1),riskFreeRate: float = None,
-    solver: str = None, solverOptions: dict = None,verbose: bool =False):
+    def __init__(self, historicalPrices: pd.DataFrame, tickers: list = None, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
+    solver: str = None, solverOptions: dict = None, verbose: bool = False):
         """Constructor to instantiate the class based on the input parameters.
 
         Parameters
@@ -38,7 +38,9 @@ class MeanVariance:
         if riskFreeRate is None:
 
             # TODO: implement risk-free rate for same time period as returns; implement dynamic rf-rate rather than static
-            self.riskFreeRate=FetchData().risk_free_rate(startDate=historicalPrices.index.astype('str')[0], endDate=historicalPrices.index.astype('str')[-1]).mean().values[0]
+            startDate = historicalPrices.index.astype('str')[0]
+            endDate = historicalPrices.index.astype('str')[-1]
+            self.riskFreeRate=FetchData().risk_free_rate(startDate=startDate, endDate=endDate).mean().values[0]
 
         else:
 
@@ -46,16 +48,29 @@ class MeanVariance:
 
         self.weights = None
 
-    def fit(self) -> dict:
+    def fit(self, method: str = 'max_sharpe', **kwargs) -> dict:
+
         """Optimize the portfolio by maxizing the Sharpe Ratio, and return the tickers and their respective weights.
+
+        Parameters
+        ----------
+        method : str, optional
+            Different methods by which one can maximise the portfolio.
+            Please have a look at the following link for the available methods that are available for optimisation : https://pyportfolioopt.readthedocs.io/en/latest/MeanVariance.html
+
+            #TODO: We can always add more objectives to the solver so that we can get a better estimate of our weights.
+            #  We can take some lower or upper bounds from the investment team as an input and use that as a contraint in our optimization
+            by default 'max_sharpe'
 
         Returns
         -------
         dict
             Returns a dictionary with format {ticker:weight}
         """
+        if method not in dir(self.portfolio):
+            raise ValueError(f"The Chosen method '{method}'' is not a valid optimisation method. Please have a look at the documentation and try again.")
 
-        self.weights = dict(self.portfolio.max_sharpe(self.riskFreeRate))
+        self.weights = eval(f"dict(self.portfolio.{method}(**kwargs))")
 
         return self.weights
 

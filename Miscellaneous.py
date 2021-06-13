@@ -11,6 +11,10 @@ import datetime as dt
 from typing import Union
 from pypfopt import plotting
 
+plt.style.use('seaborn')
+plt.rcParams['image.cmap'] = 'winter_r'
+plt.rcParams['font.family'] = 'serif'
+
 class Plot:
 
     def weights(self, weights: dict, ax: ax = None, plot: bool = False, **kwargs) -> ax:
@@ -36,8 +40,10 @@ class Plot:
         if not isinstance(weights, dict):
             raise ValueError("Weights are required to be in a dictionary of the format {ticker:weight}")
 
+        fig, ax = plt.subplots(figsize=(10, 6))
         # Calling the plot_weights function from PyPortfolioOpt
         ax = plotting.plot_weights(weights=weights, ax=ax, **kwargs)
+        plt.title("Weights by Tickers in Optimised Portfolio", size=15)
 
         if plot:
             plt.show()
@@ -79,20 +85,16 @@ class Plot:
             Returns an ax object
         """
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(12, 8))
         # TODO: Some error occuring in plotting
         ax = plotting.plot_efficient_frontier(opt=optimizer, ef_param=efficientParameter,
                                                      ef_param_range=efficentParameterRange, points=points,
-                                                     ax=ax, show_assets=showAssets, **kwargs)
+                                                     ax=ax, show_assets=showAssets)
 
         if complex:
 
-            try:
-                mu = kwargs['mu']
-                S = kwargs['S']
-            # To make sure that the complex plotting does not throw an Error
-            except: raise NameError("Values of Return or Covariance not found, cannot plot complex plot. Please try again.")
-
+            expectedReturns = pypfopt.expected_returns.mean_historical_return(**kwargs)
+            covarianceMatrix = pypfopt.risk_models.CovarianceShrinkage(**kwargs).ledoit_wolf()
             # Find the tangency portfolio
             optimizer.max_sharpe()
             tangentReturns, tangentStd, _ = optimizer.portfolio_performance()
@@ -100,9 +102,9 @@ class Plot:
 
             # Generate random portfolios
             n_samples = 10000
-            sampleWeights = np.random.dirichlet(np.ones(len(mu)), n_samples)
-            sampleReturns = sampleWeights.dot(mu)
-            sampleStd = np.sqrt(np.diag(sampleWeights @ S @ sampleWeights.T))
+            sampleWeights = np.random.dirichlet(np.ones(len(expectedReturns)), n_samples)
+            sampleReturns = sampleWeights.dot(expectedReturns)
+            sampleStd = np.sqrt(np.diag(sampleWeights @ covarianceMatrix @ sampleWeights.T))
             sharpes = sampleReturns / sampleStd
             ax.scatter(sampleStd, sampleReturns, marker=".", c=sharpes, cmap="viridis_r")
 
@@ -117,15 +119,15 @@ class Plot:
 
         return ax
 
-    def covariance_heatmap(self, covarianceMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def covariance_heatmap(self, assetDataframe:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
 
         """The function returns a matplotlib axes object and computes the heatmap for the Covariance matrix
         of a given set of assets
 
         Parameters
         ----------
-        covarianceMatrix : pd.Dataframe
-            The Covariance matrix of the set of assets
+        assetDataframe : pd.Dataframe
+            The dataframe containing the historical data for our tickers
         showAssets : bool, optional
             Whether to use the tickers as labels or not
             (not recommended for large set of assets), by default True
@@ -135,24 +137,25 @@ class Plot:
         ax
             Retuns the matplotlib.axes object
         """
-
+        covarianceMatrix = assetDataframe.cov()
         ax = plotting.plot_covariance(cov_matrix=covarianceMatrix, plot_correlation=False,
                                              show_tickers=showAssets, **kwargs)
+        plt.title("Correlation Matrix of Price data\n", size=15)
 
         if plot:
             plt.show()
 
         return ax
 
-    def correlation_heatmap(self, correlationMatrix:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
+    def correlation_heatmap(self, assetDataframe:pd.DataFrame, showAssets:bool=True, plot:bool=False, **kwargs) -> ax:
 
         """The function returns a matplotlib axes object and computes the heatmap for the correlationMatrix
         of a given set of assets
 
         Parameters
         ----------
-        correlationMatrix : pd.Dataframe
-            The Correlation Matrix of the set of assets
+        assetDataframe : pd.Dataframe
+            The dataframe containing the historical data for our tickers
         showAssets : bool, optional
             Whether to use the tickers as labels or not
             (not recommended for large set of assets), by default True
@@ -163,9 +166,10 @@ class Plot:
             Retuns the matplotlib.axes object
         """
 
-        # I've directly asked the user for a correlation matrix rather than asking for a covariance matrix first and then converting
-        #  it into a correlation matrix in PyPortfolioOpt
+        correlationMatrix = assetDataframe.corr()
+
         ax = plotting.plot_covariance(cov_matrix=correlationMatrix, plot_correlation=False, show_tickers=showAssets, **kwargs)
+        plt.title("Correlation Matrix of Price data\n", size=15)
 
         if plot:
             plt.show()
