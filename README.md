@@ -40,5 +40,4 @@ pipenv shell
 pipenv run jupyter notebook
 ```
 All done!
-An instance of Jupyter notebook should now open up in your browser
-This is a test line
+An instance of Jupyter notebook should now open up in your browserm '
