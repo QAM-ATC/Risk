@@ -9,7 +9,7 @@ from Miscellaneous import FetchData
 
 class MeanVariance:
 
-    def __init__(self, historicalPrices: pd.DataFrame, tickers: list = None, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
+    def __init__(self, historicalPrices: pd.DataFrame, tickers: list = None, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
     solver: str = None, solverOptions: dict = None, verbose: bool = False):
         """Constructor to instantiate the class based on the input parameters.
 
@@ -19,6 +19,8 @@ class MeanVariance:
             DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps
         tickers : list, optional
             List of tickers of the assets in the portfolio, by default None
+        frequency: int, optional
+            Frequency of the data passed, default is daily, i.e., 252 days
         bounds : Union[tuple,list]
             Minimum and maximum weight of each asset or a single pair if all weights are identical, (-1,1) if shorting is allowed, by default (0,1)
         riskFreeRate : float, optional
@@ -30,9 +32,11 @@ class MeanVariance:
         verbose : bool, optional
             Whether performance and debugging information should be printed, by default False
         """
-
-        expectedReturns = expected_returns.mean_historical_return(historicalPrices)
+        expectedReturns = expected_returns.mean_historical_return(historicalPrices,frequency=frequency)
         covarianceMatrix = risk_models.CovarianceShrinkage(historicalPrices).ledoit_wolf()
+        self.historicalPrices = historicalPrices
+        self.expectedReturns=expectedReturns
+        self.covarianceMatrix = covarianceMatrix
         self.portfolio = pypfopt.EfficientFrontier(expectedReturns, covarianceMatrix, bounds, solver, verbose, solverOptions)
 
         if riskFreeRate is None:
@@ -49,7 +53,6 @@ class MeanVariance:
         self.weights = None
 
     def fit(self, method: str = 'max_sharpe', **kwargs) -> dict:
-
         """Optimize the portfolio by maxizing the Sharpe Ratio, and return the tickers and their respective weights.
 
         Parameters
@@ -92,5 +95,44 @@ class MeanVariance:
 
         return stat
 
-class CPPI:
-    ...
+    def getRiskFreeRate(self) -> float:
+        """Returns the risk free rate
+
+        Returns
+        -------
+        float
+            Risk free rate
+        """
+        return round(self.riskFreeRate,2)
+
+    def getHistoricalPrices(self) -> pd.DataFrame:
+        """Returns the historical prices
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps
+        """
+        return self.historicalPrices
+
+    def getExpectedReturns(self) -> pd.DataFrame:
+        """Returns the expected returns
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of expected returns, with index as ticker names
+        """
+        return self.expectedReturns
+
+    def getCovarianceMatrix(self) -> pd.DataFrame:
+        """Returns the historical prices
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame of covariance between tickers
+        """
+        return self.covarianceMatrix
+
+
