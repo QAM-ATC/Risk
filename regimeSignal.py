@@ -3,16 +3,14 @@
 import numpy as np
 import pandas as pd
 from typing import OrderedDict, Union
-import pypfopt
-from copy import deepcopy
-from pypfopt import expected_returns, risk_models
-from Miscellaneous import FetchData
 from Portfolio import MeanVariance
+from dateutil.relativedelta import relativedelta
 
 class regimeSignalModel():
 
     def __init__(self, regimeSignals: pd.Series, historicalPrices: pd.DataFrame, tickers: list = None, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
-    solver: str = None, solverOptions: dict = None, verbose: bool = False, constraint: bool = True):
+    solver: str = None, solverOptions: dict = None, verbose: bool = False, constraint: bool = True,
+    LOOKBACKMONTHS: int = 3, CUSTOM_CEILING_RISK: float = .15):
         """Constructor to instantiate the class based on the input parameters.
 
         Parameters
@@ -38,53 +36,38 @@ class regimeSignalModel():
         constraint: bool
             True if you want to be invested in all tickers, will set minimum weight to 1/n**2 where n is number of tickers, else False
         """
-        
-        # TODO: historicalPrices is assumed to be daily data, and regimeSignals monthly
+        self.LOOKBACK_MONTHS = LOOKBACKMONTHS
+        self.CUSTOM_CEILING_RISK = CUSTOM_CEILING_RISK
 
-        self.regimeSignals=regimeSignals
+        # TODO: historicalPrices is assumed to be daily data, and regimeSignals monthly
+        self.regimeSignals = regimeSignals
 
         # TODO: constraint can either be True or False, modify to allow for user-defined constraint
         self.numberOfTickers = len(historicalPrices.columns)
-        if constraint==True:
-            n=self.numberOfTickers
-            bounds=(1/(n**2),1)
-        
+
+        if constraint:
+
+            n = self.numberOfTickers
+            bounds = (1 / (n**2), 1)
+
         # Create a list of portfolios to backtest
         portfolios=list()
 
-        # Look back at last 3 months, TODO: last n months
-        numberOfMonths=len(historicalPrices.resample('1M'))
-        yr=historicalPrices.index[0].year
-        month=historicalPrices.index[0].month+2
-        month=month%12
-        for i in range(3,numberOfMonths+1):
-            if month==12:
-                month=1
-                yr+=1
-            else:
-                month+=1
+        # ASSUMPTION: The regime signals index is LOOKBACK_MONTHS ahead of our historical Prices time series
+        end = list(regimeSignals.index)
+        start = []
+        for date in list(regimeSignals.index):
+            start.append(date + relativedelta(months=-self.LOOKBACK_MONTHS))
 
-            yearStart=yr
-            yearEnd=yr
-            monthStart=month-3
-            if monthStart<=0:
-                monthStart+=12
-                yearStart=yr-1
-            
-            monthEnd=month-1
-            if monthEnd==0:
-                monthEnd=12
-                yearEnd-=1
+        self.dates = list(zip(start, end))
 
-            stampStart=str(yearStart)+'-'+str(monthStart)
-            stampEnd=str(yearEnd)+"-"+str(monthEnd)
+        for start, end in self.dates:
+            # Create a portfolio of last N months' worth of data
+            portfolios.append(MeanVariance(historicalPrices.loc[start:end], tickers, frequency, bounds, riskFreeRate, solver, solverOptions, verbose))
 
-            # Create a portfolio of last 3 months' worth of data
-            portfolios.append(MeanVariance(historicalPrices.loc[stampStart:stampEnd],tickers,frequency,bounds,riskFreeRate,solver,solverOptions,verbose))
-        
-        self.portfolios=portfolios
-        
-        self.regimeWeights=None
+        self.portfolios = portfolios
+
+        self.regimeWeights = None
 
     def getWeights(self,verbose: bool=False) -> dict:
         """Get the average weights for each regime type.
@@ -100,67 +83,90 @@ class regimeSignalModel():
             A dictionary with the average regime weights for each regime, of form {regimeType:setOfWeights}
         """
 
-        weightsList=dict()
-        weightsList[1]=list()
-        weightsList[-1]=list()
-        weightsList[0]=list()
+        weightsList = {}
+
+        for regimeType in self.regimeSignals.value_counts().index.tolist():
+            weightsList[regimeType] = []
 
         # For each portfolio in the list, look at regime and optimize portfolio based on required methods
-        for idx,regime in enumerate(self.regimeSignals):
-            if regime==-1:
+
+        for idx, regime in enumerate(self.regimeSignals):
+
+            print("=============================================")
+
+            if regime == -1:
+
                 if verbose:
-                    print("max sharpe")
-                    print("Training dates",
+
+                    print("Max Sharpe Optimisation")
+
+                    print("\n Training dates",
                         self.portfolios[idx].getHistoricalPrices().index[0],
-                        self.portfolios[idx].getHistoricalPrices().index[-1],"\nRegime Signal dates",
-                        self.regimeSignals.index[idx],"\nRisk-free rate",
+                        self.portfolios[idx].getHistoricalPrices().index[-1])
+
+                    print("\n Regime Signal dates", self.regimeSignals.index[idx])
+
+                    print("\n Risk-free rate",
                         self.portfolios[idx].getRiskFreeRate())
-                    print(self.portfolios[idx].getExpectedReturns())
-                    print(self.portfolios[idx].getCovarianceMatrix())
-                
+
+                    # print(self.portfolios[idx].getExpectedReturns())
+                    # print(self.portfolios[idx].getCovarianceMatrix())
+
                 # TODO: fails if all expected returns are negative
                 riskFreeRate=self.portfolios[idx].getRiskFreeRate()
-                wts=self.portfolios[idx].fit(method='max_sharpe',risk_free_rate=riskFreeRate)
-            
-            elif regime==1:
-                if verbose:
-                    print("min vol")
-                    print("Training dates",
-                        self.portfolios[idx].getHistoricalPrices().index[0],
-                        self.portfolios[idx].getHistoricalPrices().index[-1],"\nRegime Signal dates",
-                        self.regimeSignals.index[idx],"\nRisk-free rate",
-                        self.portfolios[idx].getRiskFreeRate())
-                    print(self.portfolios[idx].getExpectedReturns())
-                    print(self.portfolios[idx].getCovarianceMatrix())
-                wts=self.portfolios[idx].fit(method='min_volatility')
-            
-            elif regime==0:
-                print("custom: maximum 15% volatility")
-                print("Training dates",
-                        self.portfolios[idx].getHistoricalPrices().index[0],
-                        self.portfolios[idx].getHistoricalPrices().index[-1],"\nRegime Signal dates",
-                        self.regimeSignals.index[idx],"\nRisk-free rate",
-                        self.portfolios[idx].getRiskFreeRate())
-                print(self.portfolios[idx].getExpectedReturns())
-                print(self.portfolios[idx].getCovarianceMatrix())
-        
-                # TODO: currently target vol is 15%, which is the upper bound for the medium-vol regime; sometimes too low
-                wts=self.portfolios[idx].fit(method='efficient_risk',target_volatility=0.15)
-            
-            if verbose:
-                print()
-                print(wts)
-                print()
-                print()
-                print()
-            weightsList[regime].append(wts)
-        
-        self.regimeWeights=dict()
-        self.regimeWeights[1]=dict(pd.DataFrame([i for i in weightsList[1]]).mean())
-        self.regimeWeights[-1]=dict(pd.DataFrame([i for i in weightsList[-1]]).mean())
-        self.regimeWeights[0]=dict(pd.DataFrame([i for i in weightsList[0]]).mean())
+                weights = self.portfolios[idx].fit(method='max_sharpe',risk_free_rate=riskFreeRate)
 
-        return self.regimeWeights
+            elif regime == 1:
+                if verbose:
+
+                    print("Minimum Volatility Optimisation")
+
+                    print("\n Training dates",
+                        self.portfolios[idx].getHistoricalPrices().index[0],
+                        self.portfolios[idx].getHistoricalPrices().index[-1])
+
+                    print("\n Regime Signal dates", self.regimeSignals.index[idx])
+
+                    print("\n Risk-free rate",
+                        self.portfolios[idx].getRiskFreeRate())
+                    # print(self.portfolios[idx].getExpectedReturns())
+                    # print(self.portfolios[idx].getCovarianceMatrix())
+
+                weights = self.portfolios[idx].fit(method='min_volatility')
+
+            elif regime == 0:
+                if verbose:
+
+                    print(f"Custom: Maximum {self.CUSTOM_CEILING_RISK * 100}% volatility")
+
+                    print("\n Training dates",
+                        self.portfolios[idx].getHistoricalPrices().index[0],
+                        self.portfolios[idx].getHistoricalPrices().index[-1])
+
+                    print("\n Regime Signal dates", self.regimeSignals.index[idx])
+
+                    print("\n Risk-free rate",
+                        self.portfolios[idx].getRiskFreeRate())
+
+                # print(self.portfolios[idx].getExpectedReturns())
+                # print(self.portfolios[idx].getCovarianceMatrix())
+
+                # TODO: currently target vol is 15%, which is the upper bound for the medium-vol regime; sometimes too low
+                weights = self.portfolios[idx].fit(method='efficient_risk',target_volatility=self.CUSTOM_CEILING_RISK)
+
+            if verbose:
+
+                print("\n", weights, "\n")
+
+            weightsList[regime].append(weights)
+
+        self.regimeWeights = {}
+
+        for regimeType in list(weightsList.keys()):
+            self.regimeWeights[regimeType] = pd.DataFrame([ticker for ticker in weightsList[regimeType]]).mean().to_dict()
+
+
+        # return self.regimeWeights
 
 
 
