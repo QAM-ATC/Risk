@@ -83,10 +83,10 @@ class regimeSignalModel():
             A dictionary with the average regime weights for each regime, of form {regimeType:setOfWeights}
         """
 
-        weightsList = {}
+        self.weightsList = {}
 
         for regimeType in self.regimeSignals.value_counts().index.tolist():
-            weightsList[regimeType] = []
+            self.weightsList[regimeType] = []
 
         # For each portfolio in the list, look at regime and optimize portfolio based on required methods
 
@@ -94,7 +94,7 @@ class regimeSignalModel():
 
             print("=============================================")
 
-            if regime == -1:
+            if regime == 1:
 
                 if verbose:
 
@@ -116,7 +116,7 @@ class regimeSignalModel():
                 riskFreeRate=self.portfolios[idx].getRiskFreeRate()
                 weights = self.portfolios[idx].fit(method='max_sharpe',risk_free_rate=riskFreeRate)
 
-            elif regime == 1:
+            elif regime == 2:
                 if verbose:
 
                     print("Minimum Volatility Optimisation")
@@ -152,18 +152,22 @@ class regimeSignalModel():
                 # print(self.portfolios[idx].getCovarianceMatrix())
 
                 # TODO: currently target vol is 15%, which is the upper bound for the medium-vol regime; sometimes too low
-                weights = self.portfolios[idx].fit(method='efficient_risk',target_volatility=self.CUSTOM_CEILING_RISK)
+                try:
+                    weights = self.portfolios[idx].fit(method='efficient_risk',target_volatility=self.CUSTOM_CEILING_RISK)
+
+                except:
+                    weights = self.portfolios[idx].fit(method='min_volatility')
 
             if verbose:
 
                 print("\n", weights, "\n")
 
-            weightsList[regime].append(weights)
+            self.weightsList[regime].append(weights)
 
         self.regimeWeights = {}
 
-        for regimeType in list(weightsList.keys()):
-            self.regimeWeights[regimeType] = pd.DataFrame([ticker for ticker in weightsList[regimeType]]).mean().to_dict()
+        for regimeType in list(self.weightsList.keys()):
+            self.regimeWeights[regimeType] = pd.DataFrame([ticker for ticker in self.weightsList[regimeType]]).mean().to_dict()
 
 
         # return self.regimeWeights
