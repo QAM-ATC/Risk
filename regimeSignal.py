@@ -89,7 +89,6 @@ class regimeSignalModel():
             self.weightsList[regimeType] = []
 
         # For each portfolio in the list, look at regime and optimize portfolio based on required methods
-
         for idx, regime in enumerate(self.regimeSignals):
 
             print("=============================================")
@@ -109,8 +108,6 @@ class regimeSignalModel():
                     print("\n Risk-free rate",
                         self.portfolios[idx].getRiskFreeRate())
 
-                    # print(self.portfolios[idx].getExpectedReturns())
-                    # print(self.portfolios[idx].getCovarianceMatrix())
 
                 # TODO: fails if all expected returns are negative
                 riskFreeRate=self.portfolios[idx].getRiskFreeRate()
@@ -129,8 +126,6 @@ class regimeSignalModel():
 
                     print("\n Risk-free rate",
                         self.portfolios[idx].getRiskFreeRate())
-                    # print(self.portfolios[idx].getExpectedReturns())
-                    # print(self.portfolios[idx].getCovarianceMatrix())
 
                 weights = self.portfolios[idx].fit(method='min_volatility')
 
@@ -148,10 +143,6 @@ class regimeSignalModel():
                     print("\n Risk-free rate",
                         self.portfolios[idx].getRiskFreeRate())
 
-                # print(self.portfolios[idx].getExpectedReturns())
-                # print(self.portfolios[idx].getCovarianceMatrix())
-
-                # TODO: currently target vol is 15%, which is the upper bound for the medium-vol regime; sometimes too low
                 try:
                     weights = self.portfolios[idx].fit(method='efficient_risk',target_volatility=self.CUSTOM_CEILING_RISK)
 
@@ -169,8 +160,6 @@ class regimeSignalModel():
         for regimeType in list(self.weightsList.keys()):
             self.regimeWeights[regimeType] = pd.DataFrame([ticker for ticker in self.weightsList[regimeType]]).mean().to_dict()
 
-
-        # return self.regimeWeights
 
 
 
