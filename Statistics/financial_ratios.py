@@ -1,0 +1,1 @@
+"Put all financial ratios here, no need for class I think"
