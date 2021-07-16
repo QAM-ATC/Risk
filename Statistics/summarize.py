@@ -1,17 +1,19 @@
-"Put summary function here that pprints or returns a dataframe"
+"Put summary function here that prints or returns a dataframe"
+import pandas as pd
+from typing import Union
 
-def skewness(price):
-    """
-    Computes skewness of series or dataframe
-    
+def skewness(price: Union[pd.DataFrame,pd.Series]) -> Union[float,pd.Series]:
+    """Calculates the skewness for a given set of prices
+
     Parameters
     ----------
-    price : series / dataframe of asset price
-        
+    price : Union[pd.DataFrame,pd.Series]
+        historical prices of a given security
+
     Returns
     -------
-    float or series
-    
+    Union[float,pd.Series]
+        skewness for a given set of prices
     """
     r = price.diff().dropna()
     deviation = r - r.mean()
@@ -20,17 +22,18 @@ def skewness(price):
     return num/(sigma**3)
 
 
-def kurtosis(price):
-    """ Computes kurtosis of series or dataframe
+def kurtosis(price: Union[pd.Series,pd.DataFrame]) -> Union[float,pd.Series]:
+    """Calculates the kurtosis for a given set of prices
 
     Parameters
     ----------
-    price : series / dataframe of asset price
+    price : Union[pd.DataFrame,pd.Series]
+        historical prices of a given security
 
     Returns
     -------
-    float or series
-
+    Union[float,pd.Series]
+        kurtosis for a given set of prices
     """
     r = price.diff().dropna()
     deviation = r - r.mean()

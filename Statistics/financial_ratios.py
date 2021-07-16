@@ -1,7 +1,5 @@
 "Put all financial ratios here, no need for class I think"
-
-from Statistics.annualize import annualiseReturns, annualiseVolatility
-
+from annualize import annualiseReturns, annualiseVolatility
 
 def sharpeRatio(price, riskFreeRate, periodsPerYear):
     r = price.diff().dropna()
@@ -33,4 +31,3 @@ def tailRatio():
 
 def commonSenseRatio():
     pass
-
