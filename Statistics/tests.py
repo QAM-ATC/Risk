@@ -61,7 +61,13 @@ def grangerCausalityTest(series: pd.DataFrame, maxLags: Union[int,list], addCons
         For example: to get p-value for ssr_ftest for ith lag: res[i][0]['ssr_ftest'][1]
         
     """
-
+    cols=series.columns
+    if len(cols)!=2:
+        raise ValueError('DataFrame must have two columns')
+    for col in cols:
+        _, _, stationary = stationaryTestADF(series[col],verbose=False,stationaritySignifiance=0.05)
+        if stationary==False:
+            raise ValueError(f"{col} column is not stationary")
     res = grangercausalitytests(series, maxlag=maxLags,addconst=addConst,verbose=verbose)
     return res
 
