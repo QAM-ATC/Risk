@@ -63,7 +63,7 @@ def stationary_test_adf(series: pd.Series, verbose: bool = True, stationaritySig
                 'Is stationary': stationaryBool}
     return results
 
-def granger_causality(series: pd.DataFrame, maxLags: Union[int,list], addConst: bool = True, verbose: bool = True) -> dict:
+def granger_causality(series: pd.DataFrame, maxLags: Union[int,list], addConst: bool = True, verbose: bool = True, testToUse: str = 'ssr_ftest') -> dict:
     """Performs the Granger Causality Test for the given series
     Note: pd.DataFrame should contain two columns
     Note: series data must be stationary, difference before passing if needed
@@ -97,11 +97,68 @@ def granger_causality(series: pd.DataFrame, maxLags: Union[int,list], addConst: 
     for key in list(stationarity_results.keys()):
 
         if stationarity_results[key]['Is stationary'] == False:
-            raise ValueError(f"{key} series is not stationary")
+            raise ValueError(f"{key} is not stationary")
 
     results = grangercausalitytests(series, maxlag=maxLags,addconst=addConst,verbose=verbose)
 
-    return results
+    p_values = [round(results[i+1][0][testToUse][1], 4) for i in range(maxLags)]
+    min_p_value = np.min(p_values)
+    min_p_index = np.argmin(p_values)
+
+    pvalue = {'pvalue': min_p_value,
+                'lag': min_p_index}
+
+    return pvalue
+
+def  granger_causality_matrix(data: pd.DataFrame, testToUse: str = 'ssr_ftest', verbose: bool = False, maxlag: int = 10):
+    """The function returns a NxN matrix where N is the number of columns in our time series dataframe(should be the same as the number of variables in variables).
+    The matrix is just the minimum p-value of the Johansen Cointegration test that is performed for each lag till maxlag for each series pair.
+    The function also returns a dataframe that contains the lag value where the minimum pvalue was found. The variables in the columns are the predictors
+    and the variables in the rows are reponses. The value in each cell of the matrix can be interpreted as the whether we can assume(<0.05) if our column causes our row variable.
+    Parameters
+    ----------
+    data : pd.DataFrame
+    Dataframe of Multivariate time series
+    testToUse : str, optional
+        Which test statistic to use for our Granger Causality test, by default 'ssr_ftest'
+    verbose : boolean, optional
+        Should the computation  be shown for each lag value for each pair computed, by default False
+    maxlag : int, optional
+        The maximum lag that the test checks causality for, by default 6
+    Returns
+    -------
+    [pd.DataFrame, pd.DataFrame]
+        Returns two dataframes that contain the pvalues and the value of the lag at which the minimum pvalue was found.
+    """
+
+    stationarity_results = stationary_test_adf(data, verbose=verbose, stationaritySignifiance=0.05)
+
+    for key in list(stationarity_results.keys()):
+
+        if stationarity_results[key]['Is stationary'] == False:
+            raise ValueError(f"{key} is not stationary")
+
+    variables = data.columns
+    dataset = pd.DataFrame(np.zeros((len(variables), len(variables))), columns=variables, index=variables)
+    Indexdataset = pd.DataFrame(np.zeros((len(variables), len(variables))), columns=variables, index=variables)
+
+    for predictor in dataset.columns:
+        for response in dataset.index:
+
+            test_result = grangercausalitytests(data[[response, predictor]], maxlag=maxlag, verbose=False, addconst=True)
+
+            p_values = [round(test_result[i+1][0][testToUse][1], 4) for i in range(maxlag)]
+            min_p_value = np.min(p_values)
+            min_p_index = np.argmin(p_values)
+
+            if verbose:
+                print(f'Y = {response}, X = {predictor}, P Value = {min_p_value}')
+
+            dataset.loc[response, predictor] = min_p_value
+            Indexdataset.loc[response, predictor] = min_p_index
+
+    return dataset, Indexdataset
+
 
 def ACF(series: pd.Series, adjusted: bool=False, nLags: int=None, qStat: bool=False, fft: bool=None, alpha: float=None, missing: str='none') -> Union[np.ndarray,tuple]:
     """Calculates the ACF, and optionally the confidence intervals, Ljung-Box Q-Statistic, and its associated p-values for a given series
