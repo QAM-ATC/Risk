@@ -233,7 +233,7 @@ def PACF(series: pd.Series, nLags: int = 20, method: str='ywadjusted', alpha: fl
 
     return result
 
-def hurstExponent(series: pd.Series, maxLags: int) -> float:
+def hurst_exponent(series: pd.Series, maxlag: int) -> float:
     """Returns the Hurst Exponent value for a given time series
     Source: https://towardsdatascience.com/introduction-to-the-hurst-exponent-with-code-in-python-4da0414ca52e
 
@@ -249,7 +249,7 @@ def hurstExponent(series: pd.Series, maxLags: int) -> float:
     float
         Hurst Exponent
     """
-    lags = range(2, maxLags)
+    lags = range(2, maxlag)
 
     # variances of the lagged differences
     tau = [np.std(np.subtract(series[lag:], series[:-lag])) for lag in lags]
