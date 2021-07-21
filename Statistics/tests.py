@@ -3,6 +3,8 @@ from statsmodels.tsa.stattools import adfuller,grangercausalitytests,acf,pacf
 from typing import Union
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 def stationary_test_adf(series: pd.Series, verbose: bool = True, stationaritySignifiance: float = 0.05) -> tuple:
     """Runs the Augmented Dickey-Fuller test on the series, with the Null Hypothesis of non-stationarity
@@ -160,7 +162,7 @@ def  granger_causality_matrix(data: pd.DataFrame, testToUse: str = 'ssr_ftest', 
     return dataset, Indexdataset
 
 
-def ACF(series: pd.Series, adjusted: bool=False, nLags: int=None, qStat: bool=False, fft: bool=None, alpha: float=None, missing: str='none') -> Union[np.ndarray,tuple]:
+def ACF(series: pd.Series, adjusted: bool = False, nLags: int = 20, qStat: bool = False, fft: bool = True, alpha: float = None, missing: str = 'none', plot: bool = True) -> Union[np.ndarray,tuple]:
     """Calculates the ACF, and optionally the confidence intervals, Ljung-Box Q-Statistic, and its associated p-values for a given series
     Check documentation here: https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.acf.html#statsmodels.tsa.stattools.acf
     Note: series is only for one security
@@ -190,9 +192,16 @@ def ACF(series: pd.Series, adjusted: bool=False, nLags: int=None, qStat: bool=Fa
             The Ljung-Box Q-Statistic, if qStat is True, of type np.ndarray
             The p-values associated with the Q-statistics, if qStat is True, of type np.ndarray
     """
-    return acf(x=series, adjusted=adjusted, nlags=nLags, qstat=qStat, fft=fft, alpha=alpha, missing=missing)
+    result = acf(x=series, adjusted=adjusted, nlags=nLags, qstat=qStat, fft=fft, alpha=alpha, missing=missing)
 
-def PACF(series: pd.Series, nLags: int=None, method: str='ywadjusted', alpha: float=None) -> Union[np.ndarray,tuple]:
+    if plot:
+
+        sm.graphics.tsa.plot_acf(series.values.squeeze(), lags=nLags)
+        plt.show()
+
+    return result
+
+def PACF(series: pd.Series, nLags: int = 20, method: str='ywadjusted', alpha: float = None, plot: bool = True) -> Union[np.ndarray,tuple]:
     """Calculates the PACF, and optionally the confidence intervals, for the returns of a given series
     Documentation: https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.pacf.html#statsmodels.tsa.stattools.pacf
     Note: series is only for one security
@@ -214,7 +223,15 @@ def PACF(series: pd.Series, nLags: int=None, method: str='ywadjusted', alpha: fl
         Partial autocorrelations, nlags elements, including lag zero, of type np.ndarray and
             Confidence intervals for the PACF if alpha is not None, of type np.ndarray
     """
-    return pacf(x=series,nlags=nLags,method=method,alpha=alpha)
+
+    result =  pacf(x=series,nlags=nLags,method=method,alpha=alpha)
+
+    if plot:
+
+        sm.graphics.tsa.plot_pacf(series.values.squeeze(), lags=nLags)
+        plt.show()
+
+    return result
 
 def hurstExponent(series: pd.Series, maxLags: int) -> float:
     """Returns the Hurst Exponent value for a given time series
