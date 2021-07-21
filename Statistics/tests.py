@@ -4,14 +4,14 @@ from typing import Union
 import pandas as pd
 import numpy as np
 
-def stationaryTestADF(series: pd.Series,verbose: bool = True, stationaritySignifiance: float = 0.05) -> tuple:
-    """Runs the Augmented Dickey-Fuller test on the series, with the null of non-stationarity
-    Note: series is only for one security
+def stationary_test_adf(series: pd.Series, verbose: bool = True, stationaritySignifiance: float = 0.05) -> tuple:
+    """Runs the Augmented Dickey-Fuller test on the series, with the Null Hypothesis of non-stationarity
+    i.e data has a unit root
 
     Parameters
     ----------
     series : pd.Series
-        time series data
+        Time series data that we want to test for stationarity
     verbose : bool, optional
         True if the ADF statistic, p-value and critical values are to be printed, by default True
     stationaritySignificance : float, optional
@@ -22,19 +22,39 @@ def stationaryTestADF(series: pd.Series,verbose: bool = True, stationaritySignif
     tuple
         Returns the relevant values in the format (p-value, ADF statistic, stationaryBool)
     """
-    X = series.values
-    result = adfuller(X)
+
+    # Incase the given input is a Dataframe and not a Series object, iteratively call the same function
+    # for each col of our input dataframe and return as a dict
+    if isinstance(series, pd.DataFrame):
+
+        results = {}
+        for col in series.columns:
+
+            print(col)
+            results[col] = stationary_test_adf(series[col])
+            print("--------------- \n")
+
+        return results
+
+    result = adfuller(series)
+
     print('ADF Statistic: %f' % result[0])
     print('p-value: %f' % result[1])
     print('Critical Values:')
-    for key, value in result[4].items():
-        print('\t%s: %.3f' % (key, value))
-    if result[1]<=stationaritySignifiance:
-        stationaryBool = True # null is rejected and series is stationary
-    else:
-        stationaryBool = False # null cannot be rejected and series isn't stationary
 
-    return result[1],result[0],stationaryBool
+    for key, value in result[4].items():
+
+        print('\t%s: %.3f' % (key, value))
+
+    if result[1] <= stationaritySignifiance:
+        # Null Hypothesis is rejected and series is stationary
+        stationaryBool = True
+
+    else:
+        # Null Hypothesis cannot be rejected and series isn't stationary
+        stationaryBool = False
+
+    return result[1], result[0], stationaryBool
 
 def grangerCausalityTest(series: pd.DataFrame, maxLags: Union[int,list], addConst: bool = True, verbose: bool = True) -> dict:
     """Performs the Granger Causality Test for the given series
@@ -55,11 +75,11 @@ def grangerCausalityTest(series: pd.DataFrame, maxLags: Union[int,list], addCons
     Returns
     -------
     dict
-        All test results, dictionary keys are the number of lags. For each lag the values are a tuple, 
+        All test results, dictionary keys are the number of lags. For each lag the values are a tuple,
             First element: a dictionary with test statistic, p-values, degrees of freedom, keys: 'lrtest', 'params_ftest', 'ssr_chi2test', 'ssr_ftest'
             Second element: the OLS estimation results for the restricted model, the unrestricted model and the restriction (contrast) matrix for the parameter f_test
         For example: to get p-value for ssr_ftest for ith lag: res[i][0]['ssr_ftest'][1]
-        
+
     """
     cols=series.columns
     if len(cols)!=2:
@@ -96,7 +116,7 @@ def ACF(series: pd.Series, adjusted: bool=False, nLags: int=None, qStat: bool=Fa
     Returns
     -------
     Union[np.ndarray,tuple]
-        Returns the autocorrelation function of type np.ndarray, and 
+        Returns the autocorrelation function of type np.ndarray, and
             Confidence intervals for the ACF, if alpha is not None, of type np.ndarray
             The Ljung-Box Q-Statistic, if qStat is True, of type np.ndarray
             The p-values associated with the Q-statistics, if qStat is True, of type np.ndarray
