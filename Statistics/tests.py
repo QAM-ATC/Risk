@@ -30,21 +30,25 @@ def stationary_test_adf(series: pd.Series, verbose: bool = True, stationaritySig
         results = {}
         for col in series.columns:
 
-            print(col)
-            results[col] = stationary_test_adf(series[col])
-            print("--------------- \n")
+            if verbose:
+                print("--------------- \n")
+                print(col)
+
+            results[col] = stationary_test_adf(series[col], verbose=verbose)
+
 
         return results
 
     result = adfuller(series)
 
-    print('ADF Statistic: %f' % result[0])
-    print('p-value: %f' % result[1])
-    print('Critical Values:')
+    if verbose:
+        print('ADF Statistic: %f' % result[0])
+        print('p-value: %f' % result[1])
+        print('Critical Values:')
 
-    for key, value in result[4].items():
+        for key, value in result[4].items():
 
-        print('\t%s: %.3f' % (key, value))
+            print('\t%s: %.3f' % (key, value))
 
     if result[1] <= stationaritySignifiance:
         # Null Hypothesis is rejected and series is stationary
@@ -54,9 +58,12 @@ def stationary_test_adf(series: pd.Series, verbose: bool = True, stationaritySig
         # Null Hypothesis cannot be rejected and series isn't stationary
         stationaryBool = False
 
-    return result[1], result[0], stationaryBool
+    results = {'pvalue': result[1],
+                'Test Statistic': result[0],
+                'Is stationary': stationaryBool}
+    return results
 
-def grangerCausalityTest(series: pd.DataFrame, maxLags: Union[int,list], addConst: bool = True, verbose: bool = True) -> dict:
+def granger_causality(series: pd.DataFrame, maxLags: Union[int,list], addConst: bool = True, verbose: bool = True) -> dict:
     """Performs the Granger Causality Test for the given series
     Note: pd.DataFrame should contain two columns
     Note: series data must be stationary, difference before passing if needed
@@ -81,15 +88,20 @@ def grangerCausalityTest(series: pd.DataFrame, maxLags: Union[int,list], addCons
         For example: to get p-value for ssr_ftest for ith lag: res[i][0]['ssr_ftest'][1]
 
     """
-    cols=series.columns
-    if len(cols)!=2:
+
+    if len(series.columns) != 2:
         raise ValueError('DataFrame must have two columns')
-    for col in cols:
-        _, _, stationary = stationaryTestADF(series[col],verbose=False,stationaritySignifiance=0.05)
-        if stationary==False:
-            raise ValueError(f"{col} column is not stationary")
-    res = grangercausalitytests(series, maxlag=maxLags,addconst=addConst,verbose=verbose)
-    return res
+
+    stationarity_results = stationary_test_adf(series, verbose=verbose, stationaritySignifiance=0.05)
+
+    for key in list(stationarity_results.keys()):
+
+        if stationarity_results[key]['Is stationary'] == False:
+            raise ValueError(f"{key} series is not stationary")
+
+    results = grangercausalitytests(series, maxlag=maxLags,addconst=addConst,verbose=verbose)
+
+    return results
 
 def ACF(series: pd.Series, adjusted: bool=False, nLags: int=None, qStat: bool=False, fft: bool=None, alpha: float=None, missing: str='none') -> Union[np.ndarray,tuple]:
     """Calculates the ACF, and optionally the confidence intervals, Ljung-Box Q-Statistic, and its associated p-values for a given series
