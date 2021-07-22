@@ -2,6 +2,11 @@
 
 import pandas as pd
 
+__all__ = [
+    'annualised_returns',
+    'annualised_volatility'
+]
+
 def annualised_returns(returns: pd.DataFrame, periodsPerYear: int = 252):
     """This function returns the annualised returns of a given dataframe of returns.
     If the freq of the data is not daily, the annualisation factor must be specified.

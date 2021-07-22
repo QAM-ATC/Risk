@@ -4,7 +4,15 @@ from statistics.annualize import annualised_returns, annualised_volatility
 import empyrical
 import pandas as pd
 from typing import Union
-from statistics.summarize import maximum_drawdown
+from statistics.statistics import maximum_drawdown
+
+__all__ = [
+    'sharpe_ratio',
+    'calmar_ratio',
+    'omega_ratio',
+    'sortino_ratio',
+    'tail_ratio'
+]
 
 
 def sharpe_ratio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float = 0.0, periodsPerYear: Union[float, int] = 252)-> float:
