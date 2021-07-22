@@ -1,12 +1,13 @@
 "Put all financial ratios here, no need for class I think"
 
-from annualize import annualiseReturns, annualiseVolatility
+from statistics.annualize import annualised_returns, annualised_volatility
 import empyrical
 import pandas as pd
 from typing import Union
+from statistics.summarize import maximum_drawdown
 
 
-def sharpeRatio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float, periodsPerYear: Union[float, int])-> float:
+def sharpe_ratio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float = 0.0, periodsPerYear: Union[float, int] = 252)-> float:
     """ Calculates annualised sharpe ratio for given set of prices and risk free rate
 
     Parameters
@@ -23,14 +24,16 @@ def sharpeRatio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float, peri
     float
         annualised sharpe ratio
     """
-    r = price.diff().dropna()
-    rfPerPeriod = (1+riskFreeRate)**(1/periodsPerYear)-1
-    excessReturn = r - rfPerPeriod
-    annualiseExcessReturn = annualiseReturns(excessReturn, periodsPerYear)
-    annualiseVol = annualiseVolatility(r,periodsPerYear)
-    return annualiseExcessReturn/annualiseVol
+    returns = price.pct_change().dropna()
+    rfPerPeriod = (1 + riskFreeRate) ** (1 / periodsPerYear) - 1
+    excessReturn = returns - rfPerPeriod
 
-def calmarRatio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[float, int])-> float:
+    annualiseExcessReturn = annualised_returns(excessReturn, periodsPerYear)
+    annualiseVol = annualised_volatility(returns, periodsPerYear)
+
+    return annualiseExcessReturn / annualiseVol
+
+def calmar_ratio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[float, int] = 252, riskFreeRate: float = 0.0)-> float:
     """Calculates annualised calmar ratio for given set of prices and risk free rate
 
     Parameters
@@ -45,11 +48,18 @@ def calmarRatio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[flo
     float
         annualised calmar ratio
     """
-    r = price.diff().dropna()
-    calmar = empyrical.stats.calmar_ratio(r, annualisation = periodsPerYear)
+
+    returns = price.pct_change().dropna()
+    rfPerPeriod = (1 + riskFreeRate) ** (1 / periodsPerYear) - 1
+    excessReturn = returns - rfPerPeriod
+
+    annualiseExcessReturn = annualised_returns(excessReturn, periodsPerYear)
+    calmar = annualiseExcessReturn / maximum_drawdown(price)
+    # calmar = empyrical.stats.calmar_ratio(returns=returns, annualization=periodsPerYear)
+
     return calmar
 
-def omegaRatio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float, periodsPerYear: Union[float, int])-> float:
+def omega_ratio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float = 0.0, periodsPerYear: Union[float, int] = 252)-> float:
     """Calculates annualised omega ratio for given set of prices and risk free rate
 
     Parameters
@@ -66,11 +76,16 @@ def omegaRatio(price: Union[pd.DataFrame, pd.Series], riskFreeRate: float, perio
     float
         annualised omega ratio
     """
-    r = price.diff().dropna()
-    omega = empyrical.stats.omega_ratio(r, risk_free = riskFreeRate, annualisation = periodsPerYear)
+    if isinstance(price, pd.DataFrame):
+
+        return price.apply(omega_ratio, axis=0)
+
+    returns = price.pct_change().dropna()
+    omega = empyrical.stats.omega_ratio(returns, risk_free = riskFreeRate, annualization = periodsPerYear)
+
     return omega
 
-def sortinoRatio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[float, int], reqReturn: float = 0) -> float:
+def sortino_ratio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[float, int] = 252, reqReturn: float = 0) -> float:
     """Calculates annualised sortino ratio for given set of prices and risk free rate
 
     Parameters
@@ -87,11 +102,17 @@ def sortinoRatio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[fl
     float
         annualised sortino ratio
     """
-    r = price.diff().dropna()
-    sortino = empyrical.stats.sortino_ratio(r, annualisation = periodsPerYear, required_return = reqReturn)
+
+    if isinstance(price, pd.DataFrame):
+
+        return price.apply(sortino_ratio, axis=0)
+
+    returns = price.pct_change().dropna()
+    sortino = empyrical.stats.sortino_ratio(returns, annualization = periodsPerYear, required_return = reqReturn)
+
     return sortino
 
-def tailRatio(price: Union[pd.DataFrame, pd.Series]) -> float:
+def tail_ratio(price: Union[pd.DataFrame, pd.Series]) -> float:
     """Calculates annualised tail ratio for given set of prices and risk free rate
 
     Parameters
@@ -104,8 +125,13 @@ def tailRatio(price: Union[pd.DataFrame, pd.Series]) -> float:
     float
         annualised tail ratio
     """
-    r = price.diff().dropna()
-    tail = empyrical.stats.tail_ratio(r)
+    if isinstance(price, pd.DataFrame):
+
+        return price.apply(tail_ratio, axis=0)
+
+    returns = price.pct_change().dropna()
+    tail = empyrical.stats.tail_ratio(returns)
+
     return tail
 
 
