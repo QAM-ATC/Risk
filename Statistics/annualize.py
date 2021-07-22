@@ -4,7 +4,8 @@ import pandas as pd
 
 def annualised_returns(returns: pd.DataFrame, periodsPerYear: int = 252):
     """This function returns the annualised returns of a given dataframe of returns.
-    If the freq of the data is not daily, the annualisation factor must be specified
+    If the freq of the data is not daily, the annualisation factor must be specified.
+    The function returns nan if the value computed is too small
 
     Parameters
     ----------
