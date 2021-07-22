@@ -2,8 +2,10 @@
 import pandas as pd
 from typing import Union
 import empyrical
+import numpy as np
+from scipy.stats import skew, kurtosis, skewtest, kurtosistest
 
-def skewness(price: Union[pd.DataFrame,pd.Series]) -> Union[float,pd.Series]:
+def calculate_skewness(price: Union[pd.DataFrame,pd.Series], test: bool = False, **kwargs) -> Union[float,pd.Series]:
     """Calculates the skewness for a given set of prices
 
     Parameters
@@ -16,14 +18,14 @@ def skewness(price: Union[pd.DataFrame,pd.Series]) -> Union[float,pd.Series]:
     Union[float,pd.Series]
         skewness for a given set of prices
     """
-    r = price.diff().dropna()
-    deviation = r - r.mean()
-    sigma = r.std()
-    num = (deviation**3).mean()
-    return num/(sigma**3)
+    if test:
+        result = skewtest(price, **kwargs)
+        return result
+
+    return skew(price)
 
 
-def kurtosis(price: Union[pd.Series,pd.DataFrame]) -> Union[float,pd.Series]:
+def calculate_kurtosis(price: Union[pd.Series,pd.DataFrame], test: bool = False, **kwargs) -> Union[float,pd.Series]:
     """Calculates the kurtosis for a given set of prices
 
     Parameters
@@ -36,13 +38,15 @@ def kurtosis(price: Union[pd.Series,pd.DataFrame]) -> Union[float,pd.Series]:
     Union[float,pd.Series]
         kurtosis for a given set of prices
     """
-    r = price.diff().dropna()
-    deviation = r - r.mean()
-    sigma = r.std()
-    num = (deviation**4).mean()
-    return num/(sigma**4)
 
-def stability(price: pd.Series) -> float:
+    if test:
+
+        result = kurtosistest(price, **kwargs)
+        return result
+
+    return kurtosis(price)
+
+def is_stable(price: pd.Series) -> float:
     """Calculates stability for a given set of prices
 
     Parameters
@@ -55,12 +59,14 @@ def stability(price: pd.Series) -> float:
     float
        stability for a given set of prices
     """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    stability = empyrical.stats.stability_of_timeseries(r)
+    if isinstance(price, pd.DataFrame):
+        return price.apply(is_stable)
+
+    returns = price.pct_change().dropna()
+    stability = empyrical.stats.stability_of_timeseries(returns)
     return stability
 
-def maxDrawdown(price: pd.Series) -> float:
+def maximum_drawdown(price: pd.Series) -> float:
     """Calculates maximum drawdown for a given set of prices
 
     Parameters
@@ -73,12 +79,13 @@ def maxDrawdown(price: pd.Series) -> float:
     float
         maximum drawdown for a given set of prices
     """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    mdd = empyrical.stats.max_drawdown(r)
-    return mdd
 
-def cumulativeReturns(price: Union[pd.DataFrame, pd.Series]) -> float:
+    maximum_drawdown.drawdowns = (price / price.cummax()) - 1
+    maximumDrawdown = (maximum_drawdown.drawdowns).min()
+
+    return maximumDrawdown
+
+def cumulative_returns(price: Union[pd.DataFrame, pd.Series]) -> float:
     """Calculates cumulative returns for a given set of prices
 
     Parameters
@@ -91,11 +98,12 @@ def cumulativeReturns(price: Union[pd.DataFrame, pd.Series]) -> float:
     float
         cumulative returns for a given set of prices
     """
-    r = price.diff().dropna()
-    cumReturns = empyrical.stats.cum_returns(r)
+    returns = price.pct_change().dropna()
+    cumReturns = empyrical.stats.cum_returns(returns)
+
     return cumReturns
 
-def alpha(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerYear: Union[float, int]) -> float:
+def alpha(price: pd.Series, marketReturn: float, riskFreeRate: float = 0.0, periodsPerYear: Union[float, int] = 252) -> float:
     """Calculates annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)
 
     Parameters
@@ -114,9 +122,14 @@ def alpha(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPer
     float
         annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)
     """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    a = empyrical.stats.alpha(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
+
+    raise NotImplementedError("Will do it later :P")
+    if isinstance(price, pd.DataFrame):
+        return price.apply(alpha, args = (marketReturn , riskFreeRate, periodsPerYear))
+
+    returns = price.pct_change().dropna()
+    a = empyrical.stats.alpha(returns, factor_returns = marketReturn, risk_free = riskFreeRate, annualization = periodsPerYear)
+
     return a
 
 def beta(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerYear: Union[float, int]) -> float:
@@ -139,7 +152,8 @@ def beta(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerY
         annualised beta for a given set of prices, risk free rate and benchmark return (market return in CAPM)
     """
     #TO DO: take dataframe as price input
-    r = price.diff().dropna()
+    raise NotImplementedError("Will do it later :P")
+    r = price.pct_change().dropna()
     b = empyrical.stats.beta(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
     return b
 
