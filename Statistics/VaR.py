@@ -18,7 +18,7 @@ def conditional_value_at_risk(price: pd.Series, threshold: float = 0.05) -> floa
         Conditional Value at Risk (VaR value) for given price
     """
 
-    returns = price.diff().dropna()
+    returns = price.pct_change().dropna()
 
     cVar = np.mean(returns[returns < value_at_risk(price)])
 
@@ -47,7 +47,7 @@ def value_at_risk(price: pd.Series, threshold: float = 0.05) -> float:
 
         return results
 
-    returns = price.diff().dropna()
+    returns = price.pct_change().dropna()
     var = empyrical.stats.value_at_risk(returns, threshold)
 
     return var
