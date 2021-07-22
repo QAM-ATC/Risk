@@ -1,146 +1,49 @@
-"Put summary function here that prints or returns a dataframe"
+from statistics import financial_ratios
+from statistics import annualize
+from statistics import statistics
 import pandas as pd
-from typing import Union
-import empyrical
 
-def skewness(price: Union[pd.DataFrame,pd.Series]) -> Union[float,pd.Series]:
-    """Calculates the skewness for a given set of prices
+def print_summary(price: pd.Series, **kwargs):
 
-    Parameters
-    ----------
-    price : Union[pd.DataFrame,pd.Series]
-        historical prices of a given security
-
-    Returns
-    -------
-    Union[float,pd.Series]
-        skewness for a given set of prices
+    # Fin ratios
     """
-    r = price.diff().dropna()
-    deviation = r - r.mean()
-    sigma = r.std()
-    num = (deviation**3).mean()
-    return num/(sigma**3)
+    1. Sharpe ratio
+    2. Sortino ratio
+    3. calmar ratio
+    4. Omega ratio
+    5. Tail Ratio
 
+    Stats
+    1. Skewness
+    2. Kurtosis
+    3. Stability
+    4. Max Drawdown
+    5. Cumulative returns
 
-def kurtosis(price: Union[pd.Series,pd.DataFrame]) -> Union[float,pd.Series]:
-    """Calculates the kurtosis for a given set of prices
+    Annualise
+    1. Returns
+    2. Vol
 
-    Parameters
-    ----------
-    price : Union[pd.DataFrame,pd.Series]
-        historical prices of a given security
-
-    Returns
-    -------
-    Union[float,pd.Series]
-        kurtosis for a given set of prices
+    VaR
+    1. var
+    2. cvar
     """
-    r = price.diff().dropna()
-    deviation = r - r.mean()
-    sigma = r.std()
-    num = (deviation**4).mean()
-    return num/(sigma**4)
 
-def stability(price: pd.Series) -> float:
-    """Calculates stability for a given set of prices
+    result = {}
+    for ratio in financial_ratios.__all__ :
+        result[ratio] = eval(f"financial_ratios.{ratio}(price, **kwargs)")
 
-    Parameters
-    ----------
-    price : pd.Series
-       historical prices of a given security
+    returns = price.pct_change().dropna()
 
-    Returns
-    -------
-    float
-       stability for a given set of prices
-    """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    stability = empyrical.stats.stability_of_timeseries(r)
-    return stability
+    for annual in annualize.__all__:
+        result[annual] = eval(f"annualize.{annual}(returns, **kwargs)")
 
-def maxDrawdown(price: pd.Series) -> float:
-    """Calculates maximum drawdown for a given set of prices
+    for stat in statistics.__all__:
+        result[stat] = eval(f"statistics.{stat}(price, **kwargs)")
 
-    Parameters
-    ----------
-    price : pd.Series
-        historical prices of a given security
+    result['cumulative_returns'] = result['cumulative_returns'].iloc[-1, :]
 
-    Returns
-    -------
-    float
-        maximum drawdown for a given set of prices
-    """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    mdd = empyrical.stats.max_drawdown(r)
-    return mdd
+    return pd.DataFrame.from_dict(result).T
 
-def cumulativeReturns(price: Union[pd.DataFrame, pd.Series]) -> float:
-    """Calculates cumulative returns for a given set of prices
-
-    Parameters
-    ----------
-    price : Union[pd.DataFrame, pd.Series]
-        historical prices of a given security
-
-    Returns
-    -------
-    float
-        cumulative returns for a given set of prices
-    """
-    r = price.diff().dropna()
-    cumReturns = empyrical.stats.cum_returns(r)
-    return cumReturns
-
-def alpha(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerYear: Union[float, int]) -> float:
-    """Calculates annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)
-
-    Parameters
-    ----------
-    price : pd.Series
-        historical prices of a given security
-    riskFreeRate : float
-        given constant risk free rate throughout the period
-    marketReturn : float
-        daily noncumulative benchmark return throughout the period
-    periodsPerYear : Union[float, int]
-        periodicity of the returns data for purposes of annualising
-
-    Returns
-    -------
-    float
-        annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)
-    """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    a = empyrical.stats.alpha(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
-    return a
-
-def beta(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerYear: Union[float, int]) -> float:
-    """Calculates annualised beta for a given set of prices, risk free rate and benchmark return (market return in CAPM)
-
-    Parameters
-    ----------
-    price : pd.Series
-        historical prices of a given security
-    riskFreeRate : float
-        given constant risk free rate throughout the period
-    marketReturn : float
-        daily noncumulative benchmark return throughout the period
-    periodsPerYear : Union[float, int]
-        periodicity of the returns data for purposes of annualising
-
-    Returns
-    -------
-    float
-        annualised beta for a given set of prices, risk free rate and benchmark return (market return in CAPM)
-    """
-    #TO DO: take dataframe as price input
-    r = price.diff().dropna()
-    b = empyrical.stats.beta(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
-    return b
 
 
