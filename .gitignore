@@ -1,2 +1,6 @@
 .vscode/settings.json
 .ipynb_checkpoints/test-checkpoint.ipynb
+.ipynb_checkpoints/RegimeSignal-checkpoint.ipynb
+.ipynb_checkpoints/testRegime-checkpoint.ipynb
+Statistics/__pycache__/annualize.cpython-37.pyc
+*.pyc
