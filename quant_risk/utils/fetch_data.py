@@ -3,6 +3,10 @@ import quandl
 import datetime as dt
 from typing import Union
 
+__all__ = [
+    'test_set',
+    'risk_free_rate'
+]
 
 # Gets test datasets from the quandl api
 def test_set(startDate: str = None, endDate: str = None, ticker: Union[str, list] = "AAPL", **kwargs) -> pd.DataFrame:

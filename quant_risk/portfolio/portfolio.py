@@ -5,11 +5,15 @@ import pandas as pd
 from typing import OrderedDict, Union
 import pypfopt
 from pypfopt import expected_returns, risk_models
-from utils import fetch_data
+from quant_risk.utils import fetch_data
+
+__all__ = [
+    'MeanVariance'
+]
 
 class MeanVariance:
 
-    def __init__(self, historicalPrices: pd.DataFrame, tickers: list = None, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
+    def __init__(self, historicalPrices: pd.DataFrame, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
     solver: str = None, solverOptions: dict = None, verbose: bool = False):
         """Constructor to instantiate the class based on the input parameters.
 
