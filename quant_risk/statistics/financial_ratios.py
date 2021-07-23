@@ -1,10 +1,10 @@
 "Put all financial ratios here, no need for class I think"
 
-from statistics.annualize import annualised_returns, annualised_volatility
+from quant_risk.statistics.annualize import annualised_returns, annualised_volatility
 import empyrical
 import pandas as pd
 from typing import Union
-from statistics.statistics import maximum_drawdown
+from quant_risk.statistics.statistics import maximum_drawdown
 
 __all__ = [
     'sharpe_ratio',

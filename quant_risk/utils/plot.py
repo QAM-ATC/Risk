@@ -6,6 +6,13 @@ import pandas as pd
 from typing import Union
 from pypfopt import plotting
 
+__all__ = [
+    'weights',
+    'efficient_frontier',
+    'covariance_heatmap',
+    'correlation_heatmap',
+]
+
 def weights(weights: dict, ax: ax = None, plot: bool = False, **kwargs) -> ax:
     """The function plots the weights that are outputted by the
     PyPortfolioOpt optimizer.
