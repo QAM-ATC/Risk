@@ -9,7 +9,7 @@ from utils import fetch_data
 
 class MeanVariance:
 
-    def __init__(self, historicalPrices: pd.DataFrame, tickers: list = None, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
+    def __init__(self, historicalPrices: pd.DataFrame, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
     solver: str = None, solverOptions: dict = None, verbose: bool = False):
         """Constructor to instantiate the class based on the input parameters.
 
