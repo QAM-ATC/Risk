@@ -10,6 +10,10 @@ pip install pipenv
 ``` {python}
 pipenv shell
 ```
+3. Update your setup tools package by:
+```{python}
+python -m pip install -U pip setuptools
+```
 3. Now, to install the package, run the command:
 ``` {python}
 pipenv install quant_risk

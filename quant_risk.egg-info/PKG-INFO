@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: quant-risk
-Version: 1.0.0
+Version: 1.0.1
 Summary: Quantitative functions in Python
 Home-page: https://github.com/QAM-ATC/Risk/tree/package
 Author:  NTU Quantitative Asset Management Club
@@ -17,6 +17,10 @@ Description: # Risk
         2. then go to the main directory of this repo and do:
         ``` {python}
         pipenv shell
+        ```
+        3. Update your setup tools package by:
+        ```{python}
+        python -m pip install -U pip setuptools
         ```
         3. Now, to install the package, run the command:
         ``` {python}
