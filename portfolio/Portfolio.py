@@ -7,6 +7,10 @@ import pypfopt
 from pypfopt import expected_returns, risk_models
 from utils import fetch_data
 
+__all__ = [
+    'MeanVariance'
+]
+
 class MeanVariance:
 
     def __init__(self, historicalPrices: pd.DataFrame, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,

@@ -6,6 +6,10 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
+__all__ = [
+    'auto_arima'
+]
+
 # AUTO ARIMA
 def auto_arima(endogenousSeries: Union[pd.Series, np.array], exogenousSeries: Union[pd.DataFrame, np.array],
                  pRange: int = 5, dRange: int = 1, qRange: int = 5, metric: str = 'BIC',  **kwargs):

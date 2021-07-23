@@ -3,6 +3,10 @@ import statsmodels.api as sm
 from typing import Union
 import pandas as pd
 
+__all__ = [
+    'regress'
+]
+
 def regress(endogenousSeries: pd.Series, exogenousSeries: Union[pd.Series, pd.DataFrame], method: str = 'OLS', **kwargs):
     """This function implements regression for a given set of endogeneous and exogeneous variables.
     Note: summary() function is not available for any method except 'OLS'

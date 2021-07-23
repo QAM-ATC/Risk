@@ -7,7 +7,11 @@ from portfolio.portfolio import MeanVariance
 from dateutil.relativedelta import relativedelta
 from statistics.summarize import print_summary
 
-class regimeSignalModel():
+__all__ = [
+    'RegimeSignalModel'
+]
+
+class RegimeSignalModel():
 
     def __init__(self, regimeSignals: pd.Series, historicalPrices: pd.DataFrame, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
     solver: str = None, solverOptions: dict = None, verbose: bool = False, constraint: bool = True,
