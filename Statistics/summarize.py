@@ -1,6 +1,7 @@
 from statistics import financial_ratios
 from statistics import annualize
 from statistics import statistics
+from statistics import VaR
 import pandas as pd
 
 def print_summary(price: pd.Series, **kwargs):
@@ -40,6 +41,9 @@ def print_summary(price: pd.Series, **kwargs):
 
     for stat in statistics.__all__:
         result[stat] = eval(f"statistics.{stat}(price, **kwargs)")
+
+    for var in VaR.__all__:
+        result[var] = eval(f"VaR.{var}(price, **kwargs)")
 
     result['cumulative_returns'] = result['cumulative_returns'].iloc[-1, :]
 
