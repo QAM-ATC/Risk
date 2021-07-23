@@ -1,0 +1,5 @@
+statsmodels==0.12.2
+empyrical==0.5.5
+matplotlib==3.4.2
+pyportfolioopt==1.4.2
+quandl==3.6.1
