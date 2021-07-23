@@ -3,12 +3,13 @@
 import numpy as np
 import pandas as pd
 from typing import OrderedDict, Union
-from portfolio.Portfolio import MeanVariance
+from portfolio.portfolio import MeanVariance
 from dateutil.relativedelta import relativedelta
+from statistics.summarize import print_summary
 
 class regimeSignalModel():
 
-    def __init__(self, regimeSignals: pd.Series, historicalPrices: pd.DataFrame, tickers: list = None, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
+    def __init__(self, regimeSignals: pd.Series, historicalPrices: pd.DataFrame, frequency: int=252, bounds: Union[tuple,list] = (0,1), riskFreeRate: float = None,
     solver: str = None, solverOptions: dict = None, verbose: bool = False, constraint: bool = True,
     LOOKBACKMONTHS: int = 3, CUSTOM_CEILING_RISK: float = .15):
         """Constructor to instantiate the class based on the input parameters.
@@ -51,7 +52,7 @@ class regimeSignalModel():
             bounds = (1 / (n**2), 1)
 
         # Create a list of portfolios to backtest
-        portfolios=list()
+        self.portfolios = list()
 
         # ASSUMPTION: The regime signals index is LOOKBACK_MONTHS ahead of our historical Prices time series
         end = list(regimeSignals.index)
@@ -63,13 +64,12 @@ class regimeSignalModel():
 
         for start, end in self.dates:
             # Create a portfolio of last N months' worth of data
-            portfolios.append(MeanVariance(historicalPrices.loc[start:end], tickers, frequency, bounds, riskFreeRate, solver, solverOptions, verbose))
-
-        self.portfolios = portfolios
+            self.portfolios.append(MeanVariance(historicalPrices.loc[start:end], frequency, bounds, riskFreeRate, solver, solverOptions, verbose))
 
         self.regimeWeights = None
+        self.historicalPrices = historicalPrices
 
-    def getWeights(self,verbose: bool=False) -> dict:
+    def get_weights(self,verbose: bool=False) -> dict:
         """Get the average weights for each regime type.
 
         Parameters
@@ -84,6 +84,7 @@ class regimeSignalModel():
         """
 
         self.weightsList = {}
+        self.weightsByTime = []
 
         for regimeType in self.regimeSignals.value_counts().index.tolist():
             self.weightsList[regimeType] = []
@@ -93,7 +94,7 @@ class regimeSignalModel():
 
             print("=============================================")
 
-            if regime == 1:
+            if regime == -1:
 
                 if verbose:
 
@@ -113,7 +114,7 @@ class regimeSignalModel():
                 riskFreeRate=self.portfolios[idx].getRiskFreeRate()
                 weights = self.portfolios[idx].fit(method='max_sharpe',risk_free_rate=riskFreeRate)
 
-            elif regime == 2:
+            elif regime == 1:
                 if verbose:
 
                     print("Minimum Volatility Optimisation")
@@ -154,17 +155,42 @@ class regimeSignalModel():
                 print("\n", weights, "\n")
 
             self.weightsList[regime].append(weights)
+            self.weightsByTime.append(weights)
 
         self.regimeWeights = {}
 
         for regimeType in list(self.weightsList.keys()):
             self.regimeWeights[regimeType] = pd.DataFrame([ticker for ticker in self.weightsList[regimeType]]).mean().to_dict()
 
+        self.weightsByTime = pd.DataFrame.from_dict(self.weightsByTime)
+        self.weightsByTime.index = self.regimeSignals.index
 
 
+    def get_portfolio(self, verbose: bool = True):
+        """Computes the portfolio value from the weights matrix calculated in get_weights function.
+        If Verbose: prints out the summary statistics of the portfolio
 
+        Parameters
+        ----------
+        verbose : bool, optional
+            prints out the portfolio statistics, by default True
 
+        Returns
+        -------
+        DataFrame
+            Returns a pandas dataframe of the Portfolio indexed by date
+        """
 
+        temp = pd.DataFrame(index=pd.date_range(start=self.weightsByTime.index[0],
+                                            end=self.weightsByTime.index[-1], freq='B'))
 
+        weightsByTime = pd.concat([temp, self.weightsByTime], axis=1, join='outer').ffill().resample('B').asfreq()
+        self.historicalPrices = pd.concat([self.historicalPrices, temp], axis=1, join='outer').ffill()
 
+        portfolio = pd.DataFrame((self.historicalPrices.loc[weightsByTime.index.tolist(), :] * weightsByTime).sum(axis = 1))
+        portfolio.columns = ['Portfolio Value']
 
+        if verbose:
+            print(print_summary(portfolio))
+
+        return portfolio
