@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from typing import OrderedDict, Union
-from Portfolio import MeanVariance
+from portfolio.Portfolio import MeanVariance
 from dateutil.relativedelta import relativedelta
 
 class regimeSignalModel():
