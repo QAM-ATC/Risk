@@ -5,7 +5,7 @@ import pandas as pd
 from typing import OrderedDict, Union
 import pypfopt
 from pypfopt import expected_returns, risk_models
-from utils import fetch_data
+from quant_risk.utils import fetch_data
 
 __all__ = [
     'MeanVariance'

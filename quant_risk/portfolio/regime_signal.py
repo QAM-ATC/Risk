@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 from typing import OrderedDict, Union
-from portfolio.portfolio import MeanVariance
+from quant_risk.portfolio.portfolio import MeanVariance
 from dateutil.relativedelta import relativedelta
-from statistics.summarize import print_summary
+from quant_risk.statistics.summarize import print_summary
 
 __all__ = [
     'RegimeSignalModel'

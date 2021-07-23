@@ -1,7 +1,7 @@
-from statistics import financial_ratios
-from statistics import annualize
-from statistics import statistics
-from statistics import VaR
+from quant_risk.statistics import financial_ratios
+from quant_risk.statistics import annualize
+from quant_risk.statistics import statistics
+from quant_risk.statistics import VaR
 import pandas as pd
 
 __all__ = [
