@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>quant_risk.statistics.tests &mdash; Quant Risk 1.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Quant Risk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Quant Risk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>quant_risk.statistics.tests</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quant_risk.statistics.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Statistical tests&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">statsmodels.tsa.stattools</span> <span class="kn">import</span> <span class="n">adfuller</span><span class="p">,</span><span class="n">grangercausalitytests</span><span class="p">,</span><span class="n">acf</span><span class="p">,</span><span class="n">pacf</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;stationary_test_adf&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;granger_causality&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;granger_causality_matrix&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ACF&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PACF&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;hurst_exponent&#39;</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="stationary_test_adf"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.stationary_test_adf">[docs]</a><span class="k">def</span> <span class="nf">stationary_test_adf</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">stationaritySignifiance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Runs the Augmented Dickey-Fuller test on the series, with the Null Hypothesis of non-stationarity</span>
+<span class="sd">    i.e data has a unit root</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    series : pd.Series</span>
+<span class="sd">        Time series data that we want to test for stationarity</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        True if the ADF statistic, p-value and critical values are to be printed, by default True</span>
+<span class="sd">    stationaritySignificance : float, optional</span>
+<span class="sd">        The level of signifiance at which stationarity is checked, by default 0.05 (5%)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Returns the relevant values in the format (p-value, ADF statistic, stationaryBool)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Incase the given input is a Dataframe and not a Series object, iteratively call the same function</span>
+    <span class="c1"># for each col of our input dataframe and return as a dict</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">series</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--------------- </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+            <span class="n">results</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">stationary_test_adf</span><span class="p">(</span><span class="n">series</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">adfuller</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ADF Statistic: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;p-value: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Critical Values:&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">%s</span><span class="s1">: </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">stationaritySignifiance</span><span class="p">:</span>
+        <span class="c1"># Null Hypothesis is rejected and series is stationary</span>
+        <span class="n">stationaryBool</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Null Hypothesis cannot be rejected and series isn&#39;t stationary</span>
+        <span class="n">stationaryBool</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pvalue&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s1">&#39;Test Statistic&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s1">&#39;Is stationary&#39;</span><span class="p">:</span> <span class="n">stationaryBool</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="granger_causality"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.granger_causality">[docs]</a><span class="k">def</span> <span class="nf">granger_causality</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">maxLags</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="nb">list</span><span class="p">],</span> <span class="n">addConst</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">testToUse</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ssr_ftest&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Performs the Granger Causality Test for the given series</span>
+<span class="sd">    Note: pd.DataFrame should contain two columns</span>
+<span class="sd">    Note: series data must be stationary, difference before passing if needed</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    series : pd.DataFrame</span>
+<span class="sd">        data for testing whether the time series in the second column Granger causes the time series in the first column (missing values not supported)</span>
+<span class="sd">    maxLags : int</span>
+<span class="sd">        If an integer, computes the test for all lags up to maxlag. If a list, computes the tests only for the lags in maxlag</span>
+<span class="sd">    addConst : bool</span>
+<span class="sd">        Add a constant to the model, by default True</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        True if debugging information is to be printed, by default True</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        All test results, dictionary keys are the number of lags. For each lag the values are a tuple,</span>
+<span class="sd">            First element: a dictionary with test statistic, p-values, degrees of freedom, keys: &#39;lrtest&#39;, &#39;params_ftest&#39;, &#39;ssr_chi2test&#39;, &#39;ssr_ftest&#39;</span>
+<span class="sd">            Second element: the OLS estimation results for the restricted model, the unrestricted model and the restriction (contrast) matrix for the parameter f_test</span>
+<span class="sd">        For example: to get p-value for ssr_ftest for ith lag: res[i][0][&#39;ssr_ftest&#39;][1]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DataFrame must have two columns&#39;</span><span class="p">)</span>
+
+    <span class="n">stationarity_results</span> <span class="o">=</span> <span class="n">stationary_test_adf</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">stationaritySignifiance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">stationarity_results</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+        <span class="k">if</span> <span class="n">stationarity_results</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;Is stationary&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not stationary&quot;</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">grangercausalitytests</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">maxlag</span><span class="o">=</span><span class="n">maxLags</span><span class="p">,</span><span class="n">addconst</span><span class="o">=</span><span class="n">addConst</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="n">p_values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">testToUse</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxLags</span><span class="p">)]</span>
+    <span class="n">min_p_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+    <span class="n">min_p_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+
+    <span class="n">pvalue</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pvalue&#39;</span><span class="p">:</span> <span class="n">min_p_value</span><span class="p">,</span>
+                <span class="s1">&#39;lag&#39;</span><span class="p">:</span> <span class="n">min_p_index</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">pvalue</span></div>
+
+<div class="viewcode-block" id="granger_causality_matrix"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.granger_causality_matrix">[docs]</a><span class="k">def</span>  <span class="nf">granger_causality_matrix</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">testToUse</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ssr_ftest&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The function returns a NxN matrix where N is the number of columns in our time series dataframe(should be the same as the number of variables in variables).</span>
+<span class="sd">    The matrix is just the minimum p-value of the Johansen Cointegration test that is performed for each lag till maxlag for each series pair.</span>
+<span class="sd">    The function also returns a dataframe that contains the lag value where the minimum pvalue was found. The variables in the columns are the predictors</span>
+<span class="sd">    and the variables in the rows are reponses. The value in each cell of the matrix can be interpreted as the whether we can assume(&lt;0.05) if our column causes our row variable.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pd.DataFrame</span>
+<span class="sd">    Dataframe of Multivariate time series</span>
+<span class="sd">    testToUse : str, optional</span>
+<span class="sd">        Which test statistic to use for our Granger Causality test, by default &#39;ssr_ftest&#39;</span>
+<span class="sd">    verbose : boolean, optional</span>
+<span class="sd">        Should the computation  be shown for each lag value for each pair computed, by default False</span>
+<span class="sd">    maxlag : int, optional</span>
+<span class="sd">        The maximum lag that the test checks causality for, by default 6</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [pd.DataFrame, pd.DataFrame]</span>
+<span class="sd">        Returns two dataframes that contain the pvalues and the value of the lag at which the minimum pvalue was found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">stationarity_results</span> <span class="o">=</span> <span class="n">stationary_test_adf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">stationaritySignifiance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">stationarity_results</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+        <span class="k">if</span> <span class="n">stationarity_results</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;Is stationary&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not stationary&quot;</span><span class="p">)</span>
+
+    <span class="n">variables</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">))),</span> <span class="n">columns</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+    <span class="n">Indexdataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">))),</span> <span class="n">columns</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">variables</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">predictor</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+
+            <span class="n">test_result</span> <span class="o">=</span> <span class="n">grangercausalitytests</span><span class="p">(</span><span class="n">data</span><span class="p">[[</span><span class="n">response</span><span class="p">,</span> <span class="n">predictor</span><span class="p">]],</span> <span class="n">maxlag</span><span class="o">=</span><span class="n">maxlag</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">addconst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">p_values</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">test_result</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">testToUse</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxlag</span><span class="p">)]</span>
+            <span class="n">min_p_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+            <span class="n">min_p_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Y = </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s1">, X = </span><span class="si">{</span><span class="n">predictor</span><span class="si">}</span><span class="s1">, P Value = </span><span class="si">{</span><span class="n">min_p_value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="n">dataset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">response</span><span class="p">,</span> <span class="n">predictor</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_p_value</span>
+            <span class="n">Indexdataset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">response</span><span class="p">,</span> <span class="n">predictor</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_p_index</span>
+
+    <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">Indexdataset</span></div>
+
+
+<div class="viewcode-block" id="ACF"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.ACF">[docs]</a><span class="k">def</span> <span class="nf">ACF</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">adjusted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">nLags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">qStat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fft</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">missing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the ACF, and optionally the confidence intervals, Ljung-Box Q-Statistic, and its associated p-values for a given series</span>
+<span class="sd">    Check documentation here: https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.acf.html#statsmodels.tsa.stattools.acf</span>
+<span class="sd">    Note: series is only for one security</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    series : pd.Series</span>
+<span class="sd">        time series data</span>
+<span class="sd">    adjusted : bool, optional</span>
+<span class="sd">        If True, then denominators for autocovariance are n-k, otherwise n, by default False</span>
+<span class="sd">    nLags : int, optional</span>
+<span class="sd">        Number of lags to return autocorrelation for, by default None</span>
+<span class="sd">    qStat : bool, optional</span>
+<span class="sd">        If True, returns the Ljung-Box q statistic for each autocorrelation coefficient, by default False</span>
+<span class="sd">    fft : bool, optional</span>
+<span class="sd">        If True, computes the ACF via FFT, by default None</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        If a number is given, the confidence intervals for the given level are returned, by default None</span>
+<span class="sd">    missing : str, optional</span>
+<span class="sd">        A string in [“none”, “raise”, “conservative”, “drop”] specifying how the NaNs are to be treated, by default &#39;none&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[np.ndarray,tuple]</span>
+<span class="sd">        Returns the autocorrelation function of type np.ndarray, and</span>
+<span class="sd">            Confidence intervals for the ACF, if alpha is not None, of type np.ndarray</span>
+<span class="sd">            The Ljung-Box Q-Statistic, if qStat is True, of type np.ndarray</span>
+<span class="sd">            The p-values associated with the Q-statistics, if qStat is True, of type np.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">acf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">series</span><span class="p">,</span> <span class="n">adjusted</span><span class="o">=</span><span class="n">adjusted</span><span class="p">,</span> <span class="n">nlags</span><span class="o">=</span><span class="n">nLags</span><span class="p">,</span> <span class="n">qstat</span><span class="o">=</span><span class="n">qStat</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="n">fft</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+
+        <span class="n">sm</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">plot_acf</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">lags</span><span class="o">=</span><span class="n">nLags</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PACF"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.PACF">[docs]</a><span class="k">def</span> <span class="nf">PACF</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">nLags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s1">&#39;ywadjusted&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the PACF, and optionally the confidence intervals, for the returns of a given series</span>
+<span class="sd">    Documentation: https://www.statsmodels.org/stable/generated/statsmodels.tsa.stattools.pacf.html#statsmodels.tsa.stattools.pacf</span>
+<span class="sd">    Note: series is only for one security</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    series : pd.Series</span>
+<span class="sd">        time series data</span>
+<span class="sd">    nLags : int, optional</span>
+<span class="sd">        The largest lag for which the PACF is returned, by default None</span>
+<span class="sd">    method : str, optional</span>
+<span class="sd">        Specifies which method for the calculations to use, full list in documentation, by default &#39;ywadjusted&#39;</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        If a number is given, the confidence intervals for the given level are returned, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[np.ndarray,tuple]</span>
+<span class="sd">        Partial autocorrelations, nlags elements, including lag zero, of type np.ndarray and</span>
+<span class="sd">            Confidence intervals for the PACF if alpha is not None, of type np.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span> <span class="o">=</span>  <span class="n">pacf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">series</span><span class="p">,</span><span class="n">nlags</span><span class="o">=</span><span class="n">nLags</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+
+        <span class="n">sm</span><span class="o">.</span><span class="n">graphics</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">plot_pacf</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">lags</span><span class="o">=</span><span class="n">nLags</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="hurst_exponent"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.tests.hurst_exponent">[docs]</a><span class="k">def</span> <span class="nf">hurst_exponent</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns the Hurst Exponent value for a given time series</span>
+<span class="sd">    Source: https://towardsdatascience.com/introduction-to-the-hurst-exponent-with-code-in-python-4da0414ca52e</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    series : pd.Series</span>
+<span class="sd">        time series</span>
+<span class="sd">    maxLags : int</span>
+<span class="sd">        maximum number of lags</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Hurst Exponent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lags</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">)</span>
+
+    <span class="c1"># variances of the lagged differences</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">series</span><span class="p">[</span><span class="n">lag</span><span class="p">:],</span> <span class="n">series</span><span class="p">[:</span><span class="o">-</span><span class="n">lag</span><span class="p">]))</span> <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="n">lags</span><span class="p">]</span>
+
+    <span class="c1"># calculate the slope of the log plot -&gt; the Hurst Exponent</span>
+    <span class="n">reg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lags</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tau</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">reg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Samay Panwar
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

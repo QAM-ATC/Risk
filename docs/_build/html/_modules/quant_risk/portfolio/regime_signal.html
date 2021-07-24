@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>quant_risk.portfolio.regime_signal &mdash; Quant Risk 1.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Quant Risk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Quant Risk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>quant_risk.portfolio.regime_signal</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quant_risk.portfolio.regime_signal</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Implements the regime signal model&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">quant_risk.portfolio.portfolio</span> <span class="kn">import</span> <span class="n">MeanVariance</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">from</span> <span class="nn">quant_risk.statistics.summarize</span> <span class="kn">import</span> <span class="n">print_summary</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;RegimeSignalModel&#39;</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="RegimeSignalModel"><a class="viewcode-back" href="../../../index.html#quant_risk.portfolio.regime_signal.RegimeSignalModel">[docs]</a><span class="k">class</span> <span class="nc">RegimeSignalModel</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Constructor to instantiate the class based on the input parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    regimeSignals: pd.Series</span>
+<span class="sd">        Series of integers representing the regime signal, i.e. -1, 0, +1, with the index as timestamps</span>
+<span class="sd">    historicalPrices : pd.DataFrame</span>
+<span class="sd">        DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps</span>
+<span class="sd">    tickers : list, optional</span>
+<span class="sd">        List of tickers of the assets in the portfolio, by default None</span>
+<span class="sd">    frequency: int, optional</span>
+<span class="sd">        Frequency of the data passed, default is daily, i.e., 252 days</span>
+<span class="sd">    bounds : Union[tuple,list]</span>
+<span class="sd">        Minimum and maximum weight of each asset or a single pair if all weights are identical, (-1,1) if shorting is allowed, by default (0,1)</span>
+<span class="sd">    riskFreeRate : float, optional</span>
+<span class="sd">        Risk free rate, by default None</span>
+<span class="sd">    solver : str, optional</span>
+<span class="sd">        Name of solver, by default None. List of solvers: cp.installed_solvers()</span>
+<span class="sd">    solverOptions : dict, optional</span>
+<span class="sd">        Parameters for the given solver in the format {parameter:value}, by default None</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        Whether performance and debugging information should be printed, by default False</span>
+<span class="sd">    constraint: bool</span>
+<span class="sd">        True if you want to be invested in all tickers, will set minimum weight to 1/n**2 where n is number of tickers, else False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regimeSignals</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">historicalPrices</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">frequency</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">252</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">riskFreeRate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">solverOptions</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">constraint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">LOOKBACKMONTHS</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">CUSTOM_CEILING_RISK</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.15</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor to instantiate the class based on the input parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        regimeSignals: pd.Series</span>
+<span class="sd">            Series of integers representing the regime signal, i.e. -1, 0, +1, with the index as timestamps</span>
+<span class="sd">        historicalPrices : pd.DataFrame</span>
+<span class="sd">            DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps</span>
+<span class="sd">        tickers : list, optional</span>
+<span class="sd">            List of tickers of the assets in the portfolio, by default None</span>
+<span class="sd">        frequency: int, optional</span>
+<span class="sd">            Frequency of the data passed, default is daily, i.e., 252 days</span>
+<span class="sd">        bounds : Union[tuple,list]</span>
+<span class="sd">            Minimum and maximum weight of each asset or a single pair if all weights are identical, (-1,1) if shorting is allowed, by default (0,1)</span>
+<span class="sd">        riskFreeRate : float, optional</span>
+<span class="sd">            Risk free rate, by default None</span>
+<span class="sd">        solver : str, optional</span>
+<span class="sd">            Name of solver, by default None. List of solvers: cp.installed_solvers()</span>
+<span class="sd">        solverOptions : dict, optional</span>
+<span class="sd">            Parameters for the given solver in the format {parameter:value}, by default None</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            Whether performance and debugging information should be printed, by default False</span>
+<span class="sd">        constraint: bool</span>
+<span class="sd">            True if you want to be invested in all tickers, will set minimum weight to 1/n**2 where n is number of tickers, else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LOOKBACK_MONTHS</span> <span class="o">=</span> <span class="n">LOOKBACKMONTHS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CUSTOM_CEILING_RISK</span> <span class="o">=</span> <span class="n">CUSTOM_CEILING_RISK</span>
+
+        <span class="c1"># TODO: historicalPrices is assumed to be daily data, and regimeSignals monthly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span> <span class="o">=</span> <span class="n">regimeSignals</span>
+
+        <span class="c1"># TODO: constraint can either be True or False, modify to allow for user-defined constraint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTickers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">historicalPrices</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constraint</span><span class="p">:</span>
+
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTickers</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Create a list of portfolios to backtest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># ASSUMPTION: The regime signals index is LOOKBACK_MONTHS ahead of our historical Prices time series</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="n">start</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">date</span> <span class="o">+</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=-</span><span class="bp">self</span><span class="o">.</span><span class="n">LOOKBACK_MONTHS</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dates</span><span class="p">:</span>
+            <span class="c1"># Create a portfolio of last N months&#39; worth of data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MeanVariance</span><span class="p">(</span><span class="n">historicalPrices</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">riskFreeRate</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">solverOptions</span><span class="p">,</span> <span class="n">verbose</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">regimeWeights</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">historicalPrices</span> <span class="o">=</span> <span class="n">historicalPrices</span>
+
+<div class="viewcode-block" id="RegimeSignalModel.get_weights"><a class="viewcode-back" href="../../../index.html#quant_risk.portfolio.regime_signal.RegimeSignalModel.get_weights">[docs]</a>    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the average weights for each regime type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        verbose: bool, optional</span>
+<span class="sd">            Print the performance and debugging information, default False</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary with the average regime weights for each regime, of form {regimeType:setOfWeights}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightsList</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">regimeType</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightsList</span><span class="p">[</span><span class="n">regimeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># For each portfolio in the list, look at regime and optimize portfolio based on required methods</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">regime</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="p">):</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=============================================&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">regime</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Max Sharpe Optimisation&quot;</span><span class="p">)</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training dates&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Regime Signal dates&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Risk-free rate&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getRiskFreeRate</span><span class="p">())</span>
+
+
+                <span class="c1"># TODO: fails if all expected returns are negative</span>
+                <span class="n">riskFreeRate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getRiskFreeRate</span><span class="p">()</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;max_sharpe&#39;</span><span class="p">,</span><span class="n">risk_free_rate</span><span class="o">=</span><span class="n">riskFreeRate</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">regime</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Minimum Volatility Optimisation&quot;</span><span class="p">)</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training dates&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Regime Signal dates&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Risk-free rate&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getRiskFreeRate</span><span class="p">())</span>
+
+                <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;min_volatility&#39;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">regime</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Custom: Maximum </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CUSTOM_CEILING_RISK</span> <span class="o">*</span> <span class="mi">100</span><span class="si">}</span><span class="s2">% volatility&quot;</span><span class="p">)</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training dates&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getHistoricalPrices</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Regime Signal dates&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Risk-free rate&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">getRiskFreeRate</span><span class="p">())</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;efficient_risk&#39;</span><span class="p">,</span><span class="n">target_volatility</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CUSTOM_CEILING_RISK</span><span class="p">)</span>
+
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolios</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;min_volatility&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightsList</span><span class="p">[</span><span class="n">regime</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">regimeWeights</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">regimeType</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightsList</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">regimeWeights</span><span class="p">[</span><span class="n">regimeType</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ticker</span> <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightsList</span><span class="p">[</span><span class="n">regimeType</span><span class="p">]])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regimeSignals</span><span class="o">.</span><span class="n">index</span></div>
+
+
+<div class="viewcode-block" id="RegimeSignalModel.get_portfolio"><a class="viewcode-back" href="../../../index.html#quant_risk.portfolio.regime_signal.RegimeSignalModel.get_portfolio">[docs]</a>    <span class="k">def</span> <span class="nf">get_portfolio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes the portfolio value from the weights matrix calculated in get_weights function.</span>
+<span class="sd">        If Verbose: prints out the summary statistics of the portfolio</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            prints out the portfolio statistics, by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataFrame</span>
+<span class="sd">            Returns a pandas dataframe of the Portfolio indexed by date</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                            <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">))</span>
+
+        <span class="n">weightsByTime</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightsByTime</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">asfreq</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">historicalPrices</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">historicalPrices</span><span class="p">,</span> <span class="n">temp</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+
+        <span class="n">portfolio</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">historicalPrices</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">weightsByTime</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">weightsByTime</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">portfolio</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Portfolio Value&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">print_summary</span><span class="p">(</span><span class="n">portfolio</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">portfolio</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Samay Panwar
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
