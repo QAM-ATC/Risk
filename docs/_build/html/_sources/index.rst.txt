@@ -32,6 +32,12 @@ Welcome to Quant Risk's documentation!
 .. automodule:: quant_risk.utils.plot
     :members:
 
+.. automodule:: quant_risk.portfolio.regime_signal
+    :members:
+
+.. automodule:: quant_risk.portfolio.portfolio
+    :members:
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

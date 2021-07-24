@@ -810,6 +810,180 @@ PyPortfolioOpt optimizer.</p>
 </dl>
 </dd></dl>
 
+<span class="target" id="module-quant_risk.portfolio.regime_signal"></span><p>Implements the regime signal model</p>
+<dl class="py class">
+<dt id="quant_risk.portfolio.regime_signal.RegimeSignalModel">
+<em class="property">class </em><code class="sig-prename descclassname">quant_risk.portfolio.regime_signal.</code><code class="sig-name descname">RegimeSignalModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">regimeSignals</span><span class="p">:</span> <span class="n">pandas.core.series.Series</span></em>, <em class="sig-param"><span class="n">historicalPrices</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">frequency</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">252</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>tuple<span class="p">, </span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em>, <em class="sig-param"><span class="n">riskFreeRate</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solver</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solverOptions</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">LOOKBACKMONTHS</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">CUSTOM_CEILING_RISK</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.15</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/portfolio/regime_signal.html#RegimeSignalModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.regime_signal.RegimeSignalModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor to instantiate the class based on the input parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>regimeSignals</strong> (<em>pd.Series</em>) – Series of integers representing the regime signal, i.e. -1, 0, +1, with the index as timestamps</p></li>
+<li><p><strong>historicalPrices</strong> (<em>pd.DataFrame</em>) – DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps</p></li>
+<li><p><strong>tickers</strong> (<em>list</em><em>, </em><em>optional</em>) – List of tickers of the assets in the portfolio, by default None</p></li>
+<li><p><strong>frequency</strong> (<em>int</em><em>, </em><em>optional</em>) – Frequency of the data passed, default is daily, i.e., 252 days</p></li>
+<li><p><strong>bounds</strong> (<em>Union</em><em>[</em><em>tuple</em><em>,</em><em>list</em><em>]</em>) – Minimum and maximum weight of each asset or a single pair if all weights are identical, (-1,1) if shorting is allowed, by default (0,1)</p></li>
+<li><p><strong>riskFreeRate</strong> (<em>float</em><em>, </em><em>optional</em>) – Risk free rate, by default None</p></li>
+<li><p><strong>solver</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of solver, by default None. List of solvers: cp.installed_solvers()</p></li>
+<li><p><strong>solverOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – Parameters for the given solver in the format {parameter:value}, by default None</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether performance and debugging information should be printed, by default False</p></li>
+<li><p><strong>constraint</strong> (<em>bool</em>) – True if you want to be invested in all tickers, will set minimum weight to 1/n**2 where n is number of tickers, else False</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="quant_risk.portfolio.regime_signal.RegimeSignalModel.get_portfolio">
+<code class="sig-name descname">get_portfolio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/portfolio/regime_signal.html#RegimeSignalModel.get_portfolio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.regime_signal.RegimeSignalModel.get_portfolio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the portfolio value from the weights matrix calculated in get_weights function.
+If Verbose: prints out the summary statistics of the portfolio</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – prints out the portfolio statistics, by default True</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a pandas dataframe of the Portfolio indexed by date</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.regime_signal.RegimeSignalModel.get_weights">
+<code class="sig-name descname">get_weights</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/quant_risk/portfolio/regime_signal.html#RegimeSignalModel.get_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.regime_signal.RegimeSignalModel.get_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the average weights for each regime type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print the performance and debugging information, default False</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary with the average regime weights for each regime, of form {regimeType:setOfWeights}</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-quant_risk.portfolio.portfolio"></span><p>This module implements classes for various portfolio optimization methods.</p>
+<dl class="py class">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance">
+<em class="property">class </em><code class="sig-prename descclassname">quant_risk.portfolio.portfolio.</code><code class="sig-name descname">MeanVariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">historicalPrices</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">frequency</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">252</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>tuple<span class="p">, </span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em>, <em class="sig-param"><span class="n">riskFreeRate</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solver</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solverOptions</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor to instantiate the class based on the input parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>historicalPrices</strong> (<em>pd.DataFrame</em>) – DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps</p></li>
+<li><p><strong>tickers</strong> (<em>list</em><em>, </em><em>optional</em>) – List of tickers of the assets in the portfolio, by default None</p></li>
+<li><p><strong>frequency</strong> (<em>int</em><em>, </em><em>optional</em>) – Frequency of the data passed, default is daily, i.e., 252 days</p></li>
+<li><p><strong>bounds</strong> (<em>Union</em><em>[</em><em>tuple</em><em>,</em><em>list</em><em>]</em>) – Minimum and maximum weight of each asset or a single pair if all weights are identical, (-1,1) if shorting is allowed, by default (0,1)</p></li>
+<li><p><strong>riskFreeRate</strong> (<em>float</em><em>, </em><em>optional</em>) – Risk free rate, by default None</p></li>
+<li><p><strong>solver</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of solver, by default None. List of solvers: cp.installed_solvers()</p></li>
+<li><p><strong>solverOptions</strong> (<em>dict</em><em>, </em><em>optional</em>) – Parameters for the given solver in the format {parameter:value}, by default None</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether performance and debugging information should be printed, by default False</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'max_sharpe'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the portfolio by maxizing the Sharpe Ratio, and return the tickers and their respective weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Different methods by which one can maximise the portfolio.
+Please have a look at the following link for the available methods that are available for optimisation : <a class="reference external" href="https://pyportfolioopt.readthedocs.io/en/latest/MeanVariance.html">https://pyportfolioopt.readthedocs.io/en/latest/MeanVariance.html</a></p>
+<p>#TODO: We can always add more objectives to the solver so that we can get a better estimate of our weights.
+#  We can take some lower or upper bounds from the investment team as an input and use that as a contraint in our optimization
+by default ‘max_sharpe’</p>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a dictionary with format {ticker:weight}</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.getCovarianceMatrix">
+<code class="sig-name descname">getCovarianceMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.getCovarianceMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.getCovarianceMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the historical prices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>DataFrame of covariance between tickers</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.getExpectedReturns">
+<code class="sig-name descname">getExpectedReturns</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.getExpectedReturns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.getExpectedReturns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the expected returns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>DataFrame of expected returns, with index as ticker names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.getHistoricalPrices">
+<code class="sig-name descname">getHistoricalPrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; pandas.core.frame.DataFrame<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.getHistoricalPrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.getHistoricalPrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the historical prices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>DataFrame of historical prices for each ticker, with column name as name of ticker and index as timestamps</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.getRiskFreeRate">
+<code class="sig-name descname">getRiskFreeRate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.getRiskFreeRate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.getRiskFreeRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the risk free rate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Risk free rate</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quant_risk.portfolio.portfolio.MeanVariance.stats">
+<code class="sig-name descname">stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/quant_risk/portfolio/portfolio.html#MeanVariance.stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.portfolio.MeanVariance.stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the expected annual return, annual volatility and Sharpe Ratio of the portfolio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print the statistics, by default True</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Calculated statistics in the format (expected annual return, annual volatility, Sharpe Ratio)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <div class="toctree-wrapper compound">
 </div>
 </section>
