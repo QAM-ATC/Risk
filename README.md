@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/quant-risk/badge/?version=latest)](https://quant-risk.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/quant-risk/badge/?version=latest)](https://quant-risk.readthedocs.io/en/latest/?badge=latest) ![GitHub](https://img.shields.io/github/license/QAM-ATC/Risk)
 # Risk
 Welcome to the Quant-Risk package!
 
