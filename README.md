@@ -1,3 +1,4 @@
+[![Documentation Status](https://readthedocs.org/projects/quant-risk/badge/?version=latest)](https://quant-risk.readthedocs.io/en/latest/?badge=latest)
 # Risk
 Welcome to the Quant-Risk package!
 
