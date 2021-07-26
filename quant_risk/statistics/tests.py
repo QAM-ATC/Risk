@@ -96,8 +96,7 @@ def granger_causality(series: pd.DataFrame, maxLags: Union[int,list], addConst: 
         All test results, dictionary keys are the number of lags. For each lag the values are a tuple,
             First element: a dictionary with test statistic, p-values, degrees of freedom, keys: 'lrtest', 'params_ftest', 'ssr_chi2test', 'ssr_ftest'
             Second element: the OLS estimation results for the restricted model, the unrestricted model and the restriction (contrast) matrix for the parameter f_test
-        For example: to get p-value for ssr_ftest for ith lag: res[i][0]['ssr_ftest'][1]
-
+            For example: to get p-value for ssr_ftest for ith lag: res[i][0]['ssr_ftest'][1]
     """
 
     if len(series.columns) != 2:
@@ -126,6 +125,7 @@ def  granger_causality_matrix(data: pd.DataFrame, testToUse: str = 'ssr_ftest', 
     The matrix is just the minimum p-value of the Johansen Cointegration test that is performed for each lag till maxlag for each series pair.
     The function also returns a dataframe that contains the lag value where the minimum pvalue was found. The variables in the columns are the predictors
     and the variables in the rows are reponses. The value in each cell of the matrix can be interpreted as the whether we can assume(<0.05) if our column causes our row variable.
+
     Parameters
     ----------
     data : pd.DataFrame

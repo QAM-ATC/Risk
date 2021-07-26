@@ -1,13 +1,8 @@
+statistics package
+==================
 
-Welcome to Quant Risk's documentation!
-======================================
-
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-Statistics
-=================
+Submodules
+----------
 
 statistics.VaR module
 ---------------------
@@ -57,49 +52,10 @@ statistics.tests module
    :undoc-members:
    :show-inheritance:
 
+Module contents
+---------------
 
-Models
-==================
-
-models.regression module
-------------------------
-
-.. automodule:: quant_risk.models.regression
+.. automodule:: quant_risk.statistics
    :members:
    :undoc-members:
    :show-inheritance:
-
-models.time\_series module
---------------------------
-
-.. automodule:: quant_risk.models.time_series
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Portfolio
-==================
-
-portfolio.portfolio module
---------------------------
-
-.. automodule:: quant_risk.portfolio.portfolio
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-portfolio.regime\_signal module
--------------------------------
-
-.. automodule:: quant_risk.portfolio.regime_signal
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

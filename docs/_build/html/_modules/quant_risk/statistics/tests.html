@@ -239,8 +239,7 @@
 <span class="sd">        All test results, dictionary keys are the number of lags. For each lag the values are a tuple,</span>
 <span class="sd">            First element: a dictionary with test statistic, p-values, degrees of freedom, keys: &#39;lrtest&#39;, &#39;params_ftest&#39;, &#39;ssr_chi2test&#39;, &#39;ssr_ftest&#39;</span>
 <span class="sd">            Second element: the OLS estimation results for the restricted model, the unrestricted model and the restriction (contrast) matrix for the parameter f_test</span>
-<span class="sd">        For example: to get p-value for ssr_ftest for ith lag: res[i][0][&#39;ssr_ftest&#39;][1]</span>
-
+<span class="sd">            For example: to get p-value for ssr_ftest for ith lag: res[i][0][&#39;ssr_ftest&#39;][1]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
@@ -269,6 +268,7 @@
 <span class="sd">    The matrix is just the minimum p-value of the Johansen Cointegration test that is performed for each lag till maxlag for each series pair.</span>
 <span class="sd">    The function also returns a dataframe that contains the lag value where the minimum pvalue was found. The variables in the columns are the predictors</span>
 <span class="sd">    and the variables in the rows are reponses. The value in each cell of the matrix can be interpreted as the whether we can assume(&lt;0.05) if our column causes our row variable.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : pd.DataFrame</span>

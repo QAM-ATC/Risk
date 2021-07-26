@@ -2,47 +2,99 @@
 Welcome to Quant Risk's documentation!
 ======================================
 
-.. automodule:: quant_risk.models.regression
-    :members:
-
-.. automodule:: quant_risk.models.time_series
-    :members:
-
-.. automodule:: quant_risk.statistics.annualize
-    :members:
-
-.. automodule:: quant_risk.statistics.financial_ratios
-    :members:
-
-.. automodule:: quant_risk.statistics.statistics
-    :members:
-
-.. automodule:: quant_risk.statistics.summarize
-    :members:
-
-.. automodule:: quant_risk.statistics.tests
-    :members:
-
-.. automodule:: quant_risk.statistics.VaR
-    :members:
-
-.. automodule:: quant_risk.utils.fetch_data
-    :members:
-
-.. automodule:: quant_risk.utils.plot
-    :members:
-
-.. automodule:: quant_risk.portfolio.regime_signal
-    :members:
-
-.. automodule:: quant_risk.portfolio.portfolio
-    :members:
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
+Statistics
+=================
 
+statistics.VaR module
+---------------------
+
+.. automodule:: quant_risk.statistics.VaR
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+statistics.annualize module
+---------------------------
+
+.. automodule:: quant_risk.statistics.annualize
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+statistics.financial\_ratios module
+-----------------------------------
+
+.. automodule:: quant_risk.statistics.financial_ratios
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+statistics.statistics module
+----------------------------
+
+.. automodule:: quant_risk.statistics.statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+statistics.summarize module
+---------------------------
+
+.. automodule:: quant_risk.statistics.summarize
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+statistics.tests module
+-----------------------
+
+.. automodule:: quant_risk.statistics.tests
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Models
+==================
+
+models.regression module
+------------------------
+
+.. automodule:: quant_risk.models.regression
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+models.time\_series module
+--------------------------
+
+.. automodule:: quant_risk.models.time_series
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Portfolio
+==================
+
+portfolio.portfolio module
+--------------------------
+
+.. automodule:: quant_risk.portfolio.portfolio
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+portfolio.regime\_signal module
+-------------------------------
+
+.. automodule:: quant_risk.portfolio.regime_signal
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Indices and tables
 ==================
