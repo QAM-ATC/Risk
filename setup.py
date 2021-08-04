@@ -8,7 +8,7 @@ with open('HISTORY.md') as history_file:
 
 setup_args = dict(
     name='quant_risk',
-    version='1.0.1',
+    version='1.0.2',
     description='Quantitative functions in Python',
     long_description_content_type="text/markdown",
     long_description=README + '\n\n' + HISTORY,
@@ -25,7 +25,6 @@ install_requires = [
     'empyrical==0.5.5',
     'matplotlib==3.4.2',
     'pyportfolioopt==1.4.2',
-    'quandl==3.6.1',
     'sklearn',
     'pandas',
     'numpy'
