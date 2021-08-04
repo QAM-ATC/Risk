@@ -1,3 +1,4 @@
+LICENSE
 README.md
 setup.py
 quant_risk/__init__.py
@@ -20,5 +21,4 @@ quant_risk/statistics/statistics.py
 quant_risk/statistics/summarize.py
 quant_risk/statistics/tests.py
 quant_risk/utils/__init__.py
-quant_risk/utils/fetch_data.py
 quant_risk/utils/plot.py
