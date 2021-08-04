@@ -5,7 +5,6 @@ import pandas as pd
 from typing import OrderedDict, Union
 import pypfopt
 from pypfopt import expected_returns, risk_models
-from quant_risk.utils import fetch_data
 
 __all__ = [
     'MeanVariance'
@@ -65,10 +64,7 @@ class MeanVariance:
 
         if riskFreeRate is None:
 
-            # TODO: implement risk-free rate for same time period as returns; implement dynamic rf-rate rather than static
-            startDate = historicalPrices.index.astype('str')[0]
-            endDate = historicalPrices.index.astype('str')[-1]
-            self.riskFreeRate = fetch_data.risk_free_rate(startDate=startDate, endDate=endDate).mean().values[0]
+            self.riskFreeRate = 0
 
         else:
 
