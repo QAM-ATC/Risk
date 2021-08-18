@@ -1,3 +1,7 @@
+### *Version 1.1.0*
+Added risk parity portfolios and covariance shrinkage
+
+---
 ### *Version 1.0.2*
 Removed Quandl dependency and risk free rate function
 
