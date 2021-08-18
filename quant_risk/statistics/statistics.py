@@ -165,8 +165,8 @@ def beta(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerY
     b = empyrical.stats.beta(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
     return b
 
-def elton_gruber_correlation(price: pd.DataFrame, **kwargs):
-    """This function estimates the covariance matrix by assuming an implicit structure as defined by the 
+def elton_gruber_covariance(price: pd.DataFrame, **kwargs):
+    """This function estimates the covariance matrix by assuming an implicit structure as defined by the
     Elton-Gruber Constant Correlation model.
 
     Parameters
@@ -193,3 +193,12 @@ def elton_gruber_correlation(price: pd.DataFrame, **kwargs):
 
     return result
 
+def covariance_shrinkage(price: pd.DataFrame, delta: float = 0.5, **kwargs):
+
+    returns = price.pct_change().dropna()
+    sampleCovariance = returns.cov()
+    priorCovariance = elton_gruber_covariance(price, **kwargs)
+
+    result = delta * priorCovariance + (1 - delta) * sampleCovariance
+
+    return result
