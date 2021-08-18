@@ -2,6 +2,8 @@
 # Risk
 Welcome to the Quant-Risk package!
 
+Please head over to https://quant-risk.readthedocs.io/en/latest/ to view the latest documentation for the package
+
 To set up your environment:
 1. install pipenv by:
 ``` {python}
