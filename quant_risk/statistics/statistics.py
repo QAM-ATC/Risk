@@ -185,9 +185,8 @@ def elton_gruber_covariance(price: pd.DataFrame, **kwargs):
 
     returns = price.pct_change().dropna()
     rhos = returns.corr()
-
     n = rhos.shape[0]
-    rhoBar = (rhos.values.sum() - n) / (n(n - 1))
+    rhoBar = (rhos.values.sum() - n) / (n*(n - 1))
     constantCorrelation = np.full_like(rhos, rhoBar)
     np.fill_diagonal(constantCorrelation, 1.)
     standardDev = returns.std()
@@ -238,8 +237,8 @@ def risk_contribution(portfolioWeights: Union[np.array, pd.DataFrame], covarianc
         Returns the risk contribution of each asset
     """
 
-    portfolioVariance = (portfolioWeights.T @ covarianceMatrix @ portfolioWeights)**0.5
-    marginalContribution = covarianceMatrix @ portfolioWeights
-    riskContribution = np.multiply(marginalContribution, portfolioWeights.T) / portfolioVariance
+    portfolioVariance = (np.dot(np.dot(portfolioWeights.T, covarianceMatrix), portfolioWeights))
+    marginalContribution = np.dot(covarianceMatrix, portfolioWeights)
+    riskContribution = np.multiply(marginalContribution, portfolioWeights) / portfolioVariance
 
     return riskContribution
