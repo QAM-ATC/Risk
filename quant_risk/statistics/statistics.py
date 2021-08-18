@@ -165,4 +165,31 @@ def beta(price: pd.Series, riskFreeRate: float, marketReturn: float, periodsPerY
     b = empyrical.stats.beta(r, factor_returns = marketReturn, risk_free = riskFreeRate, annualisation = periodsPerYear)
     return b
 
+def elton_gruber_correlation(price: pd.DataFrame, **kwargs):
+    """This function estimates the covariance matrix by assuming an implicit structure as defined by the 
+    Elton-Gruber Constant Correlation model.
+
+    Parameters
+    ----------
+    price : pd.DataFrame
+        Historical prices of a given security
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a covariance matrix
+    """
+
+    returns = price.pct_change().dropna()
+    rhos = returns.corr()
+
+    n = rhos.shape[0]
+    rhoBar = (rhos.values.sum() - n) / (n(n - 1))
+    constantCorrelation = np.full_like(rhos, rhoBar)
+    np.fill_diagonal(constantCorrelation, 1.)
+    standardDev = returns.std()
+
+    result = pd.DataFrame(constantCorrelation * np.outer(standardDev, standardDev), index=returns.columns, columns=returns.columns)
+
+    return result
 
