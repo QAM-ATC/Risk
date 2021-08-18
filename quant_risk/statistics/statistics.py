@@ -194,6 +194,21 @@ def elton_gruber_covariance(price: pd.DataFrame, **kwargs):
     return result
 
 def covariance_shrinkage(price: pd.DataFrame, delta: float = 0.5, **kwargs):
+    """This function computes the covariance matrix using the Ledoit-Wolf covariance shrinkage method
+    taking a linear combination of the Constant Correlation matrix, acting as our prior and the Sample covariance matrix. The posterior covariance matrix is then computed.
+
+    Parameters
+    ----------
+    price : pd.DataFrame
+        Historical prices of a given security
+    delta : float, optional
+        Constant by which to weigh the priori matrix, by default 0.5
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns a covariance matrix
+    """
 
     returns = price.pct_change().dropna()
     sampleCovariance = returns.cov()
