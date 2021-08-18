@@ -217,3 +217,26 @@ def covariance_shrinkage(price: pd.DataFrame, delta: float = 0.5, **kwargs):
     result = delta * priorCovariance + (1 - delta) * sampleCovariance
 
     return result
+
+def risk_contribution(portfolioWeights: Union[np.array, pd.DataFrame], covarianceMatrix: pd.DataFrame):
+    """This function computes the contributions to the risk/variance of the constituents of a portfolio, given
+    a set of portfolio weights and a covariance matrix
+
+    Parameters
+    ----------
+    portfolioWeights : Union[np.array, pd.DataFrame]
+        weights of our assets in our portfolio
+    covarianceMatrix : pd.DataFrame
+        the covariance matrix of our assets computed by any method
+
+    Returns
+    -------
+    pd.DataFrame
+        Returns the risk contribution of each asset
+    """
+
+    portfolioVariance = (portfolioWeights.T @ covarianceMatrix @ portfolioWeights)**0.5
+    marginalContribution = covarianceMatrix @ portfolioWeights
+    riskContribution = np.multiply(marginalContribution, portfolioWeights.T) / portfolioVariance
+
+    return riskContribution
