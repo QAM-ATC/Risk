@@ -148,7 +148,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">pypfopt</span>
 <span class="kn">from</span> <span class="nn">pypfopt</span> <span class="kn">import</span> <span class="n">expected_returns</span><span class="p">,</span> <span class="n">risk_models</span>
-<span class="kn">from</span> <span class="nn">quant_risk.utils</span> <span class="kn">import</span> <span class="n">fetch_data</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;MeanVariance&#39;</span>
@@ -208,10 +207,7 @@
 
         <span class="k">if</span> <span class="n">riskFreeRate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
-            <span class="c1"># TODO: implement risk-free rate for same time period as returns; implement dynamic rf-rate rather than static</span>
-            <span class="n">startDate</span> <span class="o">=</span> <span class="n">historicalPrices</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">endDate</span> <span class="o">=</span> <span class="n">historicalPrices</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">riskFreeRate</span> <span class="o">=</span> <span class="n">fetch_data</span><span class="o">.</span><span class="n">risk_free_rate</span><span class="p">(</span><span class="n">startDate</span><span class="o">=</span><span class="n">startDate</span><span class="p">,</span> <span class="n">endDate</span><span class="o">=</span><span class="n">endDate</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">riskFreeRate</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">else</span><span class="p">:</span>
 

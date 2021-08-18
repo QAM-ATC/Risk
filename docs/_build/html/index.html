@@ -99,6 +99,7 @@
 <li><a class="reference internal" href="#portfolio">Portfolio</a><ul>
 <li><a class="reference internal" href="#module-quant_risk.portfolio.portfolio">portfolio.portfolio module</a></li>
 <li><a class="reference internal" href="#module-quant_risk.portfolio.regime_signal">portfolio.regime_signal module</a></li>
+<li><a class="reference internal" href="#module-quant_risk.portfolio.risk_parity">portfolio.risk_parity module</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
@@ -400,6 +401,27 @@ If the freq of the data is not daily, the annualisation factor must be specified
 </dd></dl>
 
 <dl class="py function">
+<dt id="quant_risk.statistics.statistics.covariance_shrinkage">
+<code class="sig-prename descclassname">quant_risk.statistics.statistics.</code><code class="sig-name descname">covariance_shrinkage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">price</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">delta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/statistics/statistics.html#covariance_shrinkage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.statistics.statistics.covariance_shrinkage" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the covariance matrix using the Ledoit-Wolf covariance shrinkage method
+taking a linear combination of the Constant Correlation matrix, acting as our prior and the Sample covariance matrix. The posterior covariance matrix is then computed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>price</strong> (<em>pd.DataFrame</em>) – Historical prices of a given security</p></li>
+<li><p><strong>delta</strong> (<em>float</em><em>, </em><em>optional</em>) – Constant by which to weigh the priori matrix, by default 0.5</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a covariance matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="quant_risk.statistics.statistics.cumulative_returns">
 <code class="sig-prename descclassname">quant_risk.statistics.statistics.</code><code class="sig-name descname">cumulative_returns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">price</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>pandas.core.frame.DataFrame<span class="p">, </span>pandas.core.series.Series<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/quant_risk/statistics/statistics.html#cumulative_returns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.statistics.statistics.cumulative_returns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates cumulative returns for a given set of prices</p>
@@ -412,6 +434,24 @@ If the freq of the data is not daily, the annualisation factor must be specified
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="quant_risk.statistics.statistics.elton_gruber_covariance">
+<code class="sig-prename descclassname">quant_risk.statistics.statistics.</code><code class="sig-name descname">elton_gruber_covariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">price</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/statistics/statistics.html#elton_gruber_covariance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.statistics.statistics.elton_gruber_covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function estimates the covariance matrix by assuming an implicit structure as defined by the
+Elton-Gruber Constant Correlation model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>price</strong> (<em>pd.DataFrame</em>) – Historical prices of a given security</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a covariance matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -450,31 +490,52 @@ If the freq of the data is not daily, the annualisation factor must be specified
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="quant_risk.statistics.statistics.risk_contribution">
+<code class="sig-prename descclassname">quant_risk.statistics.statistics.</code><code class="sig-name descname">risk_contribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">portfolioWeights</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>numpy.array<span class="p">, </span>pandas.core.frame.DataFrame<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/statistics/statistics.html#risk_contribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.statistics.statistics.risk_contribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the contributions to the risk/variance of the constituents of a portfolio, given
+a set of portfolio weights and a covariance matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>portfolioWeights</strong> (<em>Union</em><em>[</em><em>np.array</em><em>, </em><em>pd.DataFrame</em><em>]</em>) – weights of our assets in our portfolio</p></li>
+<li><p><strong>covarianceMatrix</strong> (<em>pd.DataFrame</em>) – the covariance matrix of our assets computed by any method</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the risk contribution of each asset</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-quant_risk.statistics.summarize">
 <span id="statistics-summarize-module"></span><h2>statistics.summarize module<a class="headerlink" href="#module-quant_risk.statistics.summarize" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="quant_risk.statistics.summarize.print_summary">
 <code class="sig-prename descclassname">quant_risk.statistics.summarize.</code><code class="sig-name descname">print_summary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">price</span><span class="p">:</span> <span class="n">pandas.core.series.Series</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/statistics/summarize.html#print_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.statistics.summarize.print_summary" title="Permalink to this definition">¶</a></dt>
-<dd><ol class="arabic simple">
-<li><p>Sharpe ratio</p></li>
-<li><p>Sortino ratio</p></li>
-<li><p>calmar ratio</p></li>
-<li><p>Omega ratio</p></li>
-<li><p>Tail Ratio</p></li>
-</ol>
-<p>Stats
+<dd><p>This function returns a dataframe with the following characteristics:
+Financial Ratios:
+1. Sharpe ratio
+2. Sortino ratio
+3. Calmar ratio
+4. Omega ratio
+5. Tail Ratio</p>
+<p>Statistics:
 1. Skewness
 2. Kurtosis
 3. Stability
 4. Max Drawdown
 5. Cumulative returns</p>
-<p>Annualise
+<p>Annualise:
 1. Returns
 2. Vol</p>
-<p>VaR
-1. var
-2. cvar</p>
+<p>Value at Risk
+1. VaR
+2. cVaR</p>
 </dd></dl>
 
 </section>
@@ -893,6 +954,53 @@ If Verbose: prints out the summary statistics of the portfolio</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+</section>
+<section id="module-quant_risk.portfolio.risk_parity">
+<span id="portfolio-risk-parity-module"></span><h2>portfolio.risk_parity module<a class="headerlink" href="#module-quant_risk.portfolio.risk_parity" title="Permalink to this headline">¶</a></h2>
+<p>This module has functions related to risk parity and risk contributions</p>
+<dl class="py function">
+<dt id="quant_risk.portfolio.risk_parity.risk_parity_portfolio">
+<code class="sig-prename descclassname">quant_risk.portfolio.risk_parity.</code><code class="sig-name descname">risk_parity_portfolio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/portfolio/risk_parity.html#risk_parity_portfolio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.risk_parity.risk_parity_portfolio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the weights of the portfolio that equalizes the contributions of the constituents
+based on the given covariance matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>covarianceMatrix</strong> (<em>pd.DataFrame</em>) – The covariance matrix of our asset returns computed by any method</p></li>
+<li><p><strong>bounds</strong> (<em>tuple</em>) – The bound that each of our weights will follow, by default (0, 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the portfolio weights of the desired portfolio</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="quant_risk.portfolio.risk_parity.target_risk_contribution">
+<code class="sig-prename descclassname">quant_risk.portfolio.risk_parity.</code><code class="sig-name descname">target_risk_contribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">targetRisk</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pandas.core.frame.DataFrame</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quant_risk/portfolio/risk_parity.html#target_risk_contribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quant_risk.portfolio.risk_parity.target_risk_contribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes the portfolio weights of each of our assets given a target risk contribution
+and the  covariance matrix by minimising the MSE between target and optimised risk contribution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targetRisk</strong> (<em>np.array</em>) – The risk contributions we want for each asset</p></li>
+<li><p><strong>covarianceMatrix</strong> (<em>pd.DataFrame</em>) – The covariance matrix of our asset returns computed by any method</p></li>
+<li><p><strong>bounds</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The bound that each of our weights will follow, by default (0, 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the portfolio weights of the desired portfolio</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

@@ -96,6 +96,14 @@ portfolio.regime\_signal module
    :undoc-members:
    :show-inheritance:
 
+portfolio.risk\_parity module
+-------------------------------
+
+.. automodule:: quant_risk.portfolio.risk_parity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Indices and tables
 ==================
 

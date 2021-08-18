@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>quant_risk.portfolio.risk_parity &mdash; Quant Risk 1.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Quant Risk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Quant Risk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>quant_risk.portfolio.risk_parity</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quant_risk.portfolio.risk_parity</h1><div class="highlight"><pre>
+<span></span><span class="s2">&quot;This module has functions related to risk parity and risk contributions&quot;</span>
+
+<span class="kn">from</span> <span class="nn">quant_risk.statistics.statistics</span> <span class="kn">import</span> <span class="n">risk_contribution</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;target_risk_contribution&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mean_square_deviation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;risk_parity_portfolio&#39;</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="target_risk_contribution"><a class="viewcode-back" href="../../../index.html#quant_risk.portfolio.risk_parity.target_risk_contribution">[docs]</a><span class="k">def</span> <span class="nf">target_risk_contribution</span><span class="p">(</span><span class="n">targetRisk</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes the portfolio weights of each of our assets given a target risk contribution</span>
+<span class="sd">    and the  covariance matrix by minimising the MSE between target and optimised risk contribution</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    targetRisk : np.array</span>
+<span class="sd">        The risk contributions we want for each asset</span>
+<span class="sd">    covarianceMatrix : pd.DataFrame</span>
+<span class="sd">        The covariance matrix of our asset returns computed by any method</span>
+<span class="sd">    bounds : tuple, optional</span>
+<span class="sd">        The bound that each of our weights will follow, by default (0, 1)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Returns the portfolio weights of the desired portfolio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">numberOfAssets</span> <span class="o">=</span> <span class="n">covarianceMatrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">initialGuess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">numberOfAssets</span><span class="p">,</span> <span class="n">numberOfAssets</span><span class="p">)</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">,)</span> <span class="o">*</span> <span class="n">numberOfAssets</span>
+
+    <span class="n">weightsConstraint</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">mean_square_deviation</span><span class="p">(</span><span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">targetRisk</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This function computes the mean square deviation of the risk contributions of the constituents of</span>
+<span class="sd">        our portfolio with respect to the targetRisk that we want</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        weights : np.array</span>
+<span class="sd">            The portfolio weights of our assets</span>
+<span class="sd">        targetRisk : np.array</span>
+<span class="sd">            The risk contributions we want for each asset</span>
+<span class="sd">        covarianceMatrix : pd.DataFrame</span>
+<span class="sd">            The covariance matrix of our asset returns computed by any method</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Returns the mean square error between our target and current risk contributions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">riskContributions</span> <span class="o">=</span> <span class="n">risk_contribution</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">((</span><span class="n">riskContributions</span> <span class="o">-</span> <span class="n">targetRisk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">mean_square_deviation</span><span class="p">,</span>
+                        <span class="n">initialGuess</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">targetRisk</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">),</span>
+                        <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span>
+                        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;disp&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                        <span class="n">constraints</span> <span class="o">=</span> <span class="p">(</span><span class="n">weightsConstraint</span><span class="p">),</span>
+                        <span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">x</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+<div class="viewcode-block" id="risk_parity_portfolio"><a class="viewcode-back" href="../../../index.html#quant_risk.portfolio.risk_parity.risk_parity_portfolio">[docs]</a><span class="k">def</span> <span class="nf">risk_parity_portfolio</span><span class="p">(</span><span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the weights of the portfolio that equalizes the contributions of the constituents</span>
+<span class="sd">    based on the given covariance matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    covarianceMatrix : pd.DataFrame</span>
+<span class="sd">        The covariance matrix of our asset returns computed by any method</span>
+<span class="sd">    bounds : tuple</span>
+<span class="sd">        The bound that each of our weights will follow, by default (0, 1)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Returns the portfolio weights of the desired portfolio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">numberOfAssets</span> <span class="o">=</span> <span class="n">covarianceMatrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">targetRisk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">numberOfAssets</span><span class="p">,</span> <span class="n">numberOfAssets</span><span class="p">)</span>
+
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">target_risk_contribution</span><span class="p">(</span><span class="n">targetRisk</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">,</span> <span class="n">bounds</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, Samay Panwar
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

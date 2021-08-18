@@ -150,7 +150,7 @@
     <span class="s1">&#39;annualised_volatility&#39;</span>
 <span class="p">]</span>
 
-<div class="viewcode-block" id="annualised_returns"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.annualize.annualised_returns">[docs]</a><span class="k">def</span> <span class="nf">annualised_returns</span><span class="p">(</span><span class="n">returns</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">252</span><span class="p">):</span>
+<div class="viewcode-block" id="annualised_returns"><a class="viewcode-back" href="../../../source/statistics.html#quant_risk.statistics.annualize.annualised_returns">[docs]</a><span class="k">def</span> <span class="nf">annualised_returns</span><span class="p">(</span><span class="n">returns</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">252</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This function returns the annualised returns of a given dataframe of returns.</span>
 <span class="sd">    If the freq of the data is not daily, the annualisation factor must be specified.</span>
 <span class="sd">    The function returns nan if the value computed is too small</span>
@@ -172,7 +172,7 @@
     <span class="n">nobs</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">compoundGrowth</span> <span class="o">**</span> <span class="p">(</span><span class="n">periodsPerYear</span><span class="o">/</span><span class="n">nobs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="annualised_volatility"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.annualize.annualised_volatility">[docs]</a><span class="k">def</span> <span class="nf">annualised_volatility</span><span class="p">(</span><span class="n">returns</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">252</span><span class="p">):</span>
+<div class="viewcode-block" id="annualised_volatility"><a class="viewcode-back" href="../../../source/statistics.html#quant_risk.statistics.annualize.annualised_volatility">[docs]</a><span class="k">def</span> <span class="nf">annualised_volatility</span><span class="p">(</span><span class="n">returns</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">252</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This function returns the annualised volatility of a given dataframe of returns.</span>
 <span class="sd">    If the freq of the data is not daily, the annualisation factor must be specified</span>
 
