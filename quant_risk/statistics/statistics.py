@@ -304,3 +304,27 @@ def target_risk_contribution(targetRisk: np.array, covarianceMatrix: pd.DataFram
                         ).x
 
     return weights
+
+def risk_parity_portfolio(covarianceMatrix: pd.DataFrame, bounds: tuple = (0, 1)):
+    """Returns the weights of the portfolio that equalizes the contributions of the constituents
+    based on the given covariance matrix
+
+    Parameters
+    ----------
+    covarianceMatrix : pd.DataFrame
+        The covariance matrix of our asset returns computed by any method
+    bounds : tuple
+        The bound that each of our weights will follow, by default (0, 1)
+
+    Returns
+    -------
+    np.array
+        Returns the portfolio weights of the desired portfolio
+    """
+
+    numberOfAssets = covarianceMatrix.shape[0]
+    targetRisk = np.repeat(1 / numberOfAssets, numberOfAssets)
+
+    weights = target_risk_contribution(targetRisk, covarianceMatrix, bounds)
+
+    return weights
