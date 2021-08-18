@@ -67,7 +67,7 @@ def target_risk_contribution(targetRisk: np.array, covarianceMatrix: pd.DataFram
                         initialGuess,
                         args=(targetRisk, covarianceMatrix),
                         method = 'SLSQP',
-                        options = {'disp': False},
+                        options = {'disp': True},
                         constraints = (weightsConstraint),
                         bounds = bounds
                         ).x
