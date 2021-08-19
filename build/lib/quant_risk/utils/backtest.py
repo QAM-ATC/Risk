@@ -12,8 +12,11 @@ class BacktestEngine:
 
     def fit(self, start: Union[str, dt.datetime.timestamp()], end, weightsFunction, **kwargs):
         ...
-
+        raise NotImplementedError("Will do it later")
 
     def summary(self):
+
+        raise NotImplementedError("Will do it later")
+        
         ...
 
