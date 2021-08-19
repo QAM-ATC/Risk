@@ -13,6 +13,7 @@ quant_risk/models/time_series.py
 quant_risk/portfolio/__init__.py
 quant_risk/portfolio/portfolio.py
 quant_risk/portfolio/regime_signal.py
+quant_risk/portfolio/risk_parity.py
 quant_risk/statistics/VaR.py
 quant_risk/statistics/__init__.py
 quant_risk/statistics/annualize.py
@@ -21,4 +22,5 @@ quant_risk/statistics/statistics.py
 quant_risk/statistics/summarize.py
 quant_risk/statistics/tests.py
 quant_risk/utils/__init__.py
+quant_risk/utils/backtest.py
 quant_risk/utils/plot.py

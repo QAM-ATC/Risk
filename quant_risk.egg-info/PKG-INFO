@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: quant-risk
-Version: 1.0.2
+Version: 1.1.0
 Summary: Quantitative functions in Python
 Home-page: https://github.com/QAM-ATC/Risk/tree/package
 Author:  NTU Quantitative Asset Management Club
@@ -14,6 +14,8 @@ License-File: LICENSE
 [![Documentation Status](https://readthedocs.org/projects/quant-risk/badge/?version=latest)](https://quant-risk.readthedocs.io/en/latest/?badge=latest) ![GitHub](https://img.shields.io/github/license/QAM-ATC/Risk)
 # Risk
 Welcome to the Quant-Risk package!
+
+Please head over to https://quant-risk.readthedocs.io/en/latest/ to view the latest documentation for the package
 
 To set up your environment:
 1. install pipenv by:
@@ -62,8 +64,12 @@ All done!
 An instance of Jupyter notebook should now open up in your browser
 
 
+### *Version 1.1.0*
+Added risk parity portfolios and covariance shrinkage
+
+---
 ### *Version 1.0.2*
-Removed Quandl depedency and risk free rate function
+Removed Quandl dependency and risk free rate function
 
 ---
 ### *Version 1.0.1*

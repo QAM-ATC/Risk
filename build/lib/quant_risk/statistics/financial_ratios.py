@@ -62,8 +62,7 @@ def calmar_ratio(price: Union[pd.DataFrame, pd.Series], periodsPerYear: Union[fl
     excessReturn = returns - rfPerPeriod
 
     annualiseExcessReturn = annualised_returns(excessReturn, periodsPerYear)
-    calmar = annualiseExcessReturn / maximum_drawdown(price)
-    # calmar = empyrical.stats.calmar_ratio(returns=returns, annualization=periodsPerYear)
+    calmar = annualiseExcessReturn / abs(maximum_drawdown(price))
 
     return calmar
 
