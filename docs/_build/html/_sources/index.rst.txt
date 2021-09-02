@@ -1,6 +1,6 @@
 
 Welcome to Quant Risk's documentation!
-=====================================+
+=====================================
 
 .. toctree::
    :maxdepth: 4
