@@ -1,3 +1,8 @@
+### *Version 1.1.1*
+Fixed minor import errors
+
+---
+
 ### *Version 1.1.0*
 Added risk parity portfolios and covariance shrinkage
 

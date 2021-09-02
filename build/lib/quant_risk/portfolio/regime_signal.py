@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from typing import OrderedDict, Union
-from quant_risk.portfolio.portfolio import MeanVariance
+from quant_risk.portfolio.mean_variance import MeanVariance
 from dateutil.relativedelta import relativedelta
 from quant_risk.statistics.summarize import print_summary
 

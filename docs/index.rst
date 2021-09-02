@@ -1,6 +1,6 @@
 
 Welcome to Quant Risk's documentation!
-======================================
+=====================================+
 
 .. toctree::
    :maxdepth: 4
@@ -33,10 +33,10 @@ statistics.financial\_ratios module
    :undoc-members:
    :show-inheritance:
 
-statistics.statistics module
+statistics.stats module
 ----------------------------
 
-.. automodule:: quant_risk.statistics.statistics
+.. automodule:: quant_risk.statistics.stats
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,10 +80,10 @@ models.time\_series module
 Portfolio
 ==================
 
-portfolio.portfolio module
+portfolio.mean_variance module
 --------------------------
 
-.. automodule:: quant_risk.portfolio.portfolio
+.. automodule:: quant_risk.portfolio.mean_variance
    :members:
    :undoc-members:
    :show-inheritance:
