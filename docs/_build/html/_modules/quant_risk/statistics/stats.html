@@ -1,0 +1,443 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>quant_risk.statistics.stats &mdash; Quant Risk 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Quant Risk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Quant Risk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>quant_risk.statistics.stats</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for quant_risk.statistics.stats</h1><div class="highlight"><pre>
+<span></span><span class="s2">&quot;Put summary function here that prints or returns a dataframe&quot;</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">empyrical</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">skew</span><span class="p">,</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">skewtest</span><span class="p">,</span> <span class="n">kurtosistest</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;calculate_skewness&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;calculate_kurtosis&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;is_stable&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;maximum_drawdown&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cumulative_returns&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;elton_gruber_covariance&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;covariance_shrinkage&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;risk_contribution&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="calculate_skewness"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.calculate_skewness">[docs]</a><span class="k">def</span> <span class="nf">calculate_skewness</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span> <span class="n">test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the skewness for a given set of prices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : Union[pd.DataFrame,pd.Series]</span>
+<span class="sd">        historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[float,pd.Series]</span>
+<span class="sd">        skewness for a given set of prices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">test</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">skewtest</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">skew</span><span class="p">(</span><span class="n">price</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calculate_kurtosis"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.calculate_kurtosis">[docs]</a><span class="k">def</span> <span class="nf">calculate_kurtosis</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="n">test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the kurtosis for a given set of prices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : Union[pd.DataFrame,pd.Series]</span>
+<span class="sd">        historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[float,pd.Series]</span>
+<span class="sd">        kurtosis for a given set of prices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">test</span><span class="p">:</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">kurtosistest</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">kurtosis</span><span class="p">(</span><span class="n">price</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="is_stable"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.is_stable">[docs]</a><span class="k">def</span> <span class="nf">is_stable</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates stability for a given set of prices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.Series</span>
+<span class="sd">       historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">       stability for a given set of prices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">price</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">is_stable</span><span class="p">)</span>
+
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">stability</span> <span class="o">=</span> <span class="n">empyrical</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">stability_of_timeseries</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stability</span></div>
+
+<div class="viewcode-block" id="maximum_drawdown"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.maximum_drawdown">[docs]</a><span class="k">def</span> <span class="nf">maximum_drawdown</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates maximum drawdown for a given set of prices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.Series</span>
+<span class="sd">        historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        maximum drawdown for a given set of prices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">maximum_drawdown</span><span class="o">.</span><span class="n">drawdowns</span> <span class="o">=</span> <span class="p">(</span><span class="n">price</span> <span class="o">/</span> <span class="n">price</span><span class="o">.</span><span class="n">cummax</span><span class="p">())</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">maximumDrawdown</span> <span class="o">=</span> <span class="p">(</span><span class="n">maximum_drawdown</span><span class="o">.</span><span class="n">drawdowns</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">maximumDrawdown</span></div>
+
+<div class="viewcode-block" id="cumulative_returns"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.cumulative_returns">[docs]</a><span class="k">def</span> <span class="nf">cumulative_returns</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates cumulative returns for a given set of prices</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : Union[pd.DataFrame, pd.Series]</span>
+<span class="sd">        historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        cumulative returns for a given set of prices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">cumReturns</span> <span class="o">=</span> <span class="n">empyrical</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">cum_returns</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cumReturns</span></div>
+
+<span class="k">def</span> <span class="nf">alpha</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">marketReturn</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">riskFreeRate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">252</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.Series</span>
+<span class="sd">        historical prices of a given security</span>
+<span class="sd">    riskFreeRate : float</span>
+<span class="sd">        given constant risk free rate throughout the period</span>
+<span class="sd">    marketReturn : float</span>
+<span class="sd">        daily noncumulative benchmark return throughout the period</span>
+<span class="sd">    periodsPerYear : Union[float, int]</span>
+<span class="sd">        periodicity of the returns data for purposes of annualising</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        annualised alpha for a given set of prices, risk free rate and benchmark return (market return in CAPM)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Will do it later :P&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">price</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">marketReturn</span> <span class="p">,</span> <span class="n">riskFreeRate</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">))</span>
+
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">empyrical</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">alpha</span><span class="p">(</span><span class="n">returns</span><span class="p">,</span> <span class="n">factor_returns</span> <span class="o">=</span> <span class="n">marketReturn</span><span class="p">,</span> <span class="n">risk_free</span> <span class="o">=</span> <span class="n">riskFreeRate</span><span class="p">,</span> <span class="n">annualization</span> <span class="o">=</span> <span class="n">periodsPerYear</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">a</span>
+
+<span class="k">def</span> <span class="nf">beta</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">riskFreeRate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">marketReturn</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">periodsPerYear</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates annualised beta for a given set of prices, risk free rate and benchmark return (market return in CAPM)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.Series</span>
+<span class="sd">        historical prices of a given security</span>
+<span class="sd">    riskFreeRate : float</span>
+<span class="sd">        given constant risk free rate throughout the period</span>
+<span class="sd">    marketReturn : float</span>
+<span class="sd">        daily noncumulative benchmark return throughout the period</span>
+<span class="sd">    periodsPerYear : Union[float, int]</span>
+<span class="sd">        periodicity of the returns data for purposes of annualising</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        annualised beta for a given set of prices, risk free rate and benchmark return (market return in CAPM)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#TO DO: take dataframe as price input</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Will do it later :P&quot;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">empyrical</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">factor_returns</span> <span class="o">=</span> <span class="n">marketReturn</span><span class="p">,</span> <span class="n">risk_free</span> <span class="o">=</span> <span class="n">riskFreeRate</span><span class="p">,</span> <span class="n">annualisation</span> <span class="o">=</span> <span class="n">periodsPerYear</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">b</span>
+
+<div class="viewcode-block" id="elton_gruber_covariance"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.elton_gruber_covariance">[docs]</a><span class="k">def</span> <span class="nf">elton_gruber_covariance</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function estimates the covariance matrix by assuming an implicit structure as defined by the</span>
+<span class="sd">    Elton-Gruber Constant Correlation model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.DataFrame</span>
+<span class="sd">        Historical prices of a given security</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        Returns a covariance matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">rhos</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">rhos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rhoBar</span> <span class="o">=</span> <span class="p">(</span><span class="n">rhos</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">constantCorrelation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">rhos</span><span class="p">,</span> <span class="n">rhoBar</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">constantCorrelation</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">standardDev</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">constantCorrelation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">standardDev</span><span class="p">,</span> <span class="n">standardDev</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">returns</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">returns</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="covariance_shrinkage"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.covariance_shrinkage">[docs]</a><span class="k">def</span> <span class="nf">covariance_shrinkage</span><span class="p">(</span><span class="n">price</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes the covariance matrix using the Ledoit-Wolf covariance shrinkage method</span>
+<span class="sd">    taking a linear combination of the Constant Correlation matrix, acting as our prior and the Sample covariance matrix. The posterior covariance matrix is then computed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    price : pd.DataFrame</span>
+<span class="sd">        Historical prices of a given security</span>
+<span class="sd">    delta : float, optional</span>
+<span class="sd">        Constant by which to weigh the priori matrix, by default 0.5</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        Returns a covariance matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">sampleCovariance</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">cov</span><span class="p">()</span>
+    <span class="n">priorCovariance</span> <span class="o">=</span> <span class="n">elton_gruber_covariance</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">priorCovariance</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">sampleCovariance</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="risk_contribution"><a class="viewcode-back" href="../../../index.html#quant_risk.statistics.stats.risk_contribution">[docs]</a><span class="k">def</span> <span class="nf">risk_contribution</span><span class="p">(</span><span class="n">portfolioWeights</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="n">covarianceMatrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes the contributions to the risk/variance of the constituents of a portfolio, given</span>
+<span class="sd">    a set of portfolio weights and a covariance matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    portfolioWeights : Union[np.array, pd.DataFrame]</span>
+<span class="sd">        weights of our assets in our portfolio</span>
+<span class="sd">    covarianceMatrix : pd.DataFrame</span>
+<span class="sd">        the covariance matrix of our assets computed by any method</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        Returns the risk contribution of each asset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">portfolioVariance</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">portfolioWeights</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">covarianceMatrix</span><span class="p">),</span> <span class="n">portfolioWeights</span><span class="p">))</span>
+    <span class="n">marginalContribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">covarianceMatrix</span><span class="p">,</span> <span class="n">portfolioWeights</span><span class="p">)</span>
+    <span class="n">riskContribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">marginalContribution</span><span class="p">,</span> <span class="n">portfolioWeights</span><span class="p">)</span> <span class="o">/</span> <span class="n">portfolioVariance</span>
+
+    <span class="k">return</span> <span class="n">riskContribution</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Samay Panwar.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

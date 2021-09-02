@@ -1,6 +1,6 @@
 "This module has functions related to risk parity and risk contributions"
 
-from quant_risk.statistics.statistics import risk_contribution
+from quant_risk.statistics.stats import risk_contribution
 import numpy as np
 from scipy.optimize import minimize
 import pandas as pd

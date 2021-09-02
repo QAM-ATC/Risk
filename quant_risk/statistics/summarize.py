@@ -1,6 +1,6 @@
 from quant_risk.statistics import financial_ratios
 from quant_risk.statistics import annualize
-from quant_risk.statistics import statistics
+from quant_risk.statistics import stats
 from quant_risk.statistics import VaR
 import pandas as pd
 
@@ -43,8 +43,8 @@ def print_summary(price: pd.Series, **kwargs):
     for annual in annualize.__all__:
         result[annual] = eval(f"annualize.{annual}(returns, **kwargs)")
 
-    for stat in statistics.__all__[:-3]:
-        result[stat] = eval(f"statistics.{stat}(price, **kwargs)")
+    for stat in stats.__all__[:-3]:
+        result[stat] = eval(f"stats.{stat}(price, **kwargs)")
 
     for var in VaR.__all__:
         result[var] = eval(f"VaR.{var}(price, **kwargs)")

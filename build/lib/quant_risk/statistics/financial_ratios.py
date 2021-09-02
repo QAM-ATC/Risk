@@ -4,7 +4,7 @@ from quant_risk.statistics.annualize import annualised_returns, annualised_volat
 import empyrical
 import pandas as pd
 from typing import Union
-from quant_risk.statistics.statistics import maximum_drawdown
+from quant_risk.statistics.stats import maximum_drawdown
 
 __all__ = [
     'sharpe_ratio',

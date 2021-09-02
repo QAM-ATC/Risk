@@ -8,7 +8,7 @@ with open('HISTORY.md') as history_file:
 
 setup_args = dict(
     name='quant_risk',
-    version='1.1.0',
+    version='1.1.1',
     description='Quantitative functions in Python',
     long_description_content_type="text/markdown",
     long_description=README + '\n\n' + HISTORY,

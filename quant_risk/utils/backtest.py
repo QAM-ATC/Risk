@@ -10,13 +10,13 @@ class BacktestEngine:
         self.dataframe = dataframe
         self.portfolio = None
 
-    def fit(self, start: Union[str, dt.datetime.timestamp()], end, weightsFunction, **kwargs):
+    def fit(self, start, end, weightsFunction, **kwargs):
         ...
         raise NotImplementedError("Will do it later")
 
     def summary(self):
 
         raise NotImplementedError("Will do it later")
-        
+
         ...
 
